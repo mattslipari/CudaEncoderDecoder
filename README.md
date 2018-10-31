@@ -1,6 +1,6 @@
 
 # Parallel Convolutional Neural Networks with Cuda
-## Xiangkai Zeng (xiangkaz), Matthew Lipari (mlipari)
+Xiangkai Zeng (xiangkaz), Matthew Lipari (mlipari)
 
 ## URL
 https://mattslipari.github.io/CudaCNN/
