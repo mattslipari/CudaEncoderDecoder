@@ -25,15 +25,15 @@ Since we will be running our CNN on huge datasets, there are a number of challen
 We need to find a way to efficiently parallelize matrix multiplication. This is one of the most important and frequently used computations for the CNN.
 For the backpropagation algorithm, it could happen that multiple threads try to update the same weight at a given time. Therefore, we need to ensure the correctness of this algorithm but also try to maintain the speedup of parallel computation.
 Since the amount of data is large, we need to identify the temporal and spatial locality to better optimize our implementation.
-
+Because images have channels besides rows and cols, it will actually be a three dimensional matrix. If we plan to use batch gradient descent algorithm, there is one more dimension for the batch size, which makes it a four dimension tensor. This will make the code more complicated and harder to optimize.
 
 ## RESOURCES
 We will need computers with GPUs to run our experiment. For this we will use the same hardware that we used in Assignment 2 (GHC Machines with NVIDIA GeForce GTX 1080 GPUs). We will rely on the papers mentioned in the reference to help us optimize and complete our implementation.
 
 ## GOALS AND DELIVERABLES
 
-### Will Achieve
-We will create a parallel CNN that can handle basic image processing tasks. Our CNN will show marked improvement from a sequential implementation. Our implementation will be optimized from a variety of methods including testing and research.
+### Plan to Achieve
+We will create a parallel CNN that can handle basic image processing tasks. Our CNN will show marked improvement from a sequential implementation. Our implementation will be optimized from a variety of methods and we will assure the correctness of it by testing our model on a practical dataset.
 
 ### Hope to Achieve
 We hope to be able to use our CNN for a very interesting image processing application. We have looked into both Image Style Transfer and Image Colorization. 
@@ -46,14 +46,19 @@ In order to efficiently parallelize our CNN, we need to have access to a very la
 
 ## REFERENCES
 Krizhevsky, Alex, Ilya Sutskever, and Geoffrey E. Hinton. "Imagenet classification with deep convolutional neural networks." Advances in neural information processing systems. 2012.
+
 LeCun, Yann, et al. "Gradient-based learning applied to document recognition." Proceedings of the IEEE 86.11 (1998): 2278-2324.
+
+Gatys, Leon A., Alexander S. Ecker, and Matthias Bethge. "Image style transfer using convolutional neural networks." 2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR). IEEE, 2016.
+
+Zhang, Richard, Phillip Isola, and Alexei A. Efros. "Colorful image colorization." European Conference on Computer Vision. Springer, Cham, 2016.
 
 ## SCHEDULE
 
 **Week of** | **Goal** |
 ---| ---|
-**November 3rd**  | Finish proposal, start sequential version  | 
-**November 10th** | Start writing Cuda code  | 
+**November 3rd**  | Finish proposal, start writing Cuda code  | 
+**November 10th** | Continue writing Cuda code  | 
 **November 17th** | Finish initial Cuda implementation, test code |
 **November 24th** | Optimize based on test performance |
 **December 1st** | Attempt hopeful implementation |
