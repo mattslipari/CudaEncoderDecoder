@@ -1,6 +1,6 @@
 
 # Parallel Encoder Decoder Network with Cuda
-## Xiangkai Zeng (xiangkaz), Matthew Lipari (mlipari)
+Xiangkai Zeng (xiangkaz), Matthew Lipari (mlipari)
 
 ## URL
 https://mattslipari.github.io/CudaEncoderDecoder/
@@ -38,7 +38,7 @@ We will create a parallel Encoder-Decoder RNN that can handle basic machine tran
 ### Hope to Achieve
 We frankly do not know the difficulty of some of the things we plan to accomplish. One of the things we believe will be hard is adding in the ‘attention’ step to our Encoder-Decoder RNN. The attention step allows the model to give attention to specific inputs that it thinks are relevant for a given output. The attention step would likely increase the quality of our model, but whether or not it is feasible to get much parallelization is unknown to us at this time (we will update this proposal once we learn more information)
 
-Another challenge is to implement multi-layer RNN on top of the basic encoder-decoder network. There are potential parallelization among layers, but it would also makes the model more difficult to implement. 
+Another challenge is to implement multi-layer RNN on top of the basic encoder-decoder network. There is potential parallelization among layers, but it would also makes the model more difficult to implement. 
 
 ## PLATFORM CHOICE
 In order to efficiently parallelize our Encoder-Decoder RNN, we need to have access to a very large number of threads. As a result, we have decided to utilize CUDA C++ because of the sheer number of threads it gives us access to.
