@@ -1,8 +1,6 @@
 # Parallel Encoder Decoder Network with Cuda
 Xiangkai Zeng (xiangkaz), Matthew Lipari (mlipari)
 
-[CHECKPOINT](https://mattslipari.github.io/CudaEncoderDecoder/checkpoint)
-
 ## URL
 https://mattslipari.github.io/CudaEncoderDecoder/
 
