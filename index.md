@@ -12,7 +12,7 @@
 **November 17th** | Continue writing and testing initial implementation | Completed |
 **November 19th** | Project Milestone | Completed |
 **November 24th** | Continue writing and testing initial implementation|  In-progress |
-**November 28th** | Finish initial CNN code |  |
+**November 28th** | Finish initial code |  |
 **December 1st**  | Start writing code for an RNN  |  |
 **December 5th** | Finish writing RNN code |  |
 **November 8th** | Write the Encoder-Decoder RNN and test |  |
