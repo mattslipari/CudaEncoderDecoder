@@ -34,16 +34,25 @@ __global__ void softmax(float *A, float* p, int n)
 void fully_connected(cublasHandle_t* handle,float* x, float* y, float* w, int n, int m){
     float alpha = 1;
     float beta = 0;
-    cublasSgemm(*handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                n, m, m,
+    cublasSgemv(*handle, CUBLAS_OP_N,
+                n, m,
                 &alpha,
-                w, m,
-                x, m,
+                w, n,
+                x, 1,
                 &beta,
-                y, n);
+                y, 1);
     dim3 blockDim(16);
 
+    printf("after sgemv\n");
+
+    float* tmp = (float *)malloc(n*sizeof(*y));
+    cublasGetVector(n,sizeof(*y),y,1,tmp,1); //cp d_c->c printf("c after Sgemm :\n");
+    for(int i=0;i<n;i++) {
+	    printf("%7.0f", tmp[i]); //print c after Sgemm
+	  }
+
     relu<<<blockDim,1>>> (y, n);
+
 }
 
 void forward(float* x, float* w1, float* w2,float* y, float* loss, int n, int m) {
@@ -51,14 +60,15 @@ void forward(float* x, float* w1, float* w2,float* y, float* loss, int n, int m)
     // cublasStatus_t stat;
     cublasHandle_t handle;
     // stat = cublasCreate(&handle);
-		dim3 blockDim(16);
+    dim3 blockDim(16);
     float* output1;
-  	float* output2;
-  	float* predict;
+    float* output2;
+    float* predict;
+
     cudaMalloc((void**)&output1 ,n*sizeof(*x));
     cudaMalloc((void**)&output2, n*sizeof(*x));
     cudaMalloc((void**)&predict, n*sizeof(*x));
-  
+
     fully_connected(&handle, x, output1, w1, n, m);
     fully_connected(&handle, output1, output2, w2, n, n);
   
@@ -83,14 +93,17 @@ int main() {
     x = (float *)malloc (m * sizeof(*x));
     y = (float *)malloc (n * sizeof(*y));
     w1 = (float *)malloc (n * m * sizeof(*w1));
-    w2 = (float *)malloc (n * m * sizeof(*w2));
+    w2 = (float *)malloc (n * n * sizeof(*w2));
 
     for(int j = 0; j < m; j++) {
         x[j] = (float)j;
         for (int i = 0; i < n; i++) {
             w1[i*m+j] = j;
-            w2[i*m+j] = i;
         }
+    }         
+
+    for(int j = 0; j < n*n; j++) {
+        w2[j] = j%n;
     }
 
     float* c_x = NULL;
@@ -98,18 +111,17 @@ int main() {
     float* c_w1 = NULL;
     float* c_w2 = NULL;
 
-    cudaMalloc((void**)c_x, sizeof(x));
-    cudaMalloc((void**)c_y, sizeof(y));
-    cudaMalloc((void**)c_w1, sizeof(w1));
-    cudaMalloc((void**)c_w2, sizeof(w2));
+    cudaMalloc((void**)&c_x, m * sizeof(*x));
+    cudaMalloc((void**)&c_y, n * sizeof(*y));
+    cudaMalloc((void**)&c_w1, n * m * sizeof(*w1));
+    cudaMalloc((void**)&c_w2, n * n * sizeof(*w2));
 
     cublasSetMatrix(n, m, sizeof(float), (void *)w1, n, (void *)c_w1, n);
-    cublasSetMatrix(n, m, sizeof(float), (void *)w2, n, (void *)c_w2, n);
+    cublasSetMatrix(n, n, sizeof(float), (void *)w2, n, (void *)c_w2, n);
 
-    cublasSetMatrix(m, 1, sizeof(float), (void *)x, m, (void *)c_x, m);
-    cublasSetMatrix(n, 1, sizeof(float), (void *)y, n, (void *)c_y, n);
+    cublasSetVector(m, sizeof(float), (void *)x, 1, (void *)c_x, 1);
+    cublasSetVector(n, sizeof(float), (void *)y, 1, (void *)c_y, 1);
 
-    forward(x, w1, w2, y, &loss, n, m);
-  	return 0;
+    forward(c_x, c_w1, c_w2, c_y, &loss, n, m);
+    return 0;
 }
-
