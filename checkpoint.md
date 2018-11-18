@@ -4,13 +4,13 @@ We have tested two different implementations for the Feed Forward Network, which
 
 ## Goals
 	
-Although we are behind where we had initially indicated, we still believe that we will meet all of our “Plan to achieve” goals. We initially underestimated the amount of work we would need to do to build a strong foundation on which our RNN could be created. Now that we have more experience using our resources and understanding exactly what has to be done, we believe that we will be able to meet our goals.
+Although we are behind where we had initially indicated, we still believe that we will meet all of our “Plan to achieve” goals. We initially underestimated the amount of work we would need to do to build a strong foundation on which our RNN could be created and we also overestimated the amount of time we had available to work on these goals. Now we have more experience using our resources and understanding exactly what has to be done. We’ve also set up a schedule so that we can meet 3-4 times a week, so we should have no problem reaching the goals we initially set.  
 
-We also believe that we will be able to do significant work towards our “Hope to achieve” goals. We set these goals to be challenging, but not impossible- so we think that our schedule will allow us enough time to reach these goals.
+We also believe that we will be able to do significant work towards our “Hope to achieve” goals. We set these goals to be challenging but not impossible- so we do not think that we need to change them yet. If we feel as if we need to change these goals, we will update the proposal accordingly.
 
 ## Poster Session
 
-For the poster session, we would ideally like to show some sort of demo. It would be great if our neural network could perform some simple classification task (which it should definitely be able to do). In addition to this, we would like to show data relating to the speedup of our RNN as a result of different parallelization and optimization techniques that we tried over the course of this project.
+For the poster session, we plan on showing a demo of our code and results from our various implementation attempts. We believe that our neural network will be able to perform a simple, yet interesting, classification task, so that we can show that our code actually does something useful and is not just a jumble of computation. In addition to this, we would like to show data relating to the speedup of our RNN as a result of different parallelization and optimization techniques that we tried over the course of this project.
 
 ## Preliminary Results
 
@@ -18,6 +18,24 @@ We have found that using cuBLAS to do many of the matrix operations (multiplicat
 
 ## Issues
 
-I believe the main issue is that we do not entirely know how difficult it will be to turn our basic RNN implementation into the Encoder Decoder network. We initially thought that this would be very difficult, but now we believe that it should be easier than we thought. Despite our wavering opinions, we are not exactly sure how we plan on parallelizing this step, so this should prove to be our biggest challenge going forward.
+I believe the main issue is that we do not entirely know how difficult it will be to turn our basic RNN implementation into the Encoder Decoder network. We initially thought that this would be very difficult, but now we believe that it will be easier than we thought. Despite our wavering opinions, we are not exactly sure how we plan on parallelizing this step, so this should prove to be our biggest challenge going forward.
 
 Also, we do not know how to debug the cuda code efficiently. We tried to use gdb and cuda-gdb, but these command line tools were not very user-friendly. We noticed that there are some remote debugging options in cuda, but we are not sure whether these will be user-friendly or even feasible for this assignment.  
+
+
+Finally, the backpropagation algorithm is also complicated when we are dealing with matrix derivatives. We are not sure whether we should stick to the cuBLAS for backward computation or use a more naive method instead.
+
+# Schedule
+
+**By** | **Goal** | **Status** |
+---| ---| ---|
+**November 10th** | Finish proposal, start writing Cuda code for a feed forward network | Completed |
+**November 17th** | Continue writing and testing initial implementation | Completed |
+**November 19th** | Project Milestone | Completed |
+**November 24th** | Continue writing and testing initial implementation|  In-progress |
+**November 28th** | Finish initial CNN code |  |
+**December 1st**  | Start writing code for an RNN  |  |
+**December 5th** | Finish writing RNN code |  |
+**November 8th** | Write the Encoder-Decoder RNN and test |  |
+**December 12th** | Attempt our additional goals |  |
+**December 15th**  | Complete final version of code |  |
