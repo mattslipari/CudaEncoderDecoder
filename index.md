@@ -8,7 +8,7 @@
 
 **By** | **Goal** | **Status** |
 ---| ---| ---|
-**November 10th** | Finish proposal, start writing Cuda code for a basic CNN | Completed |
+**November 10th** | Finish proposal, start writing Cuda code for a feed forward network | Completed |
 **November 17th** | Continue writing and testing initial implementation | Completed |
 **November 19th** | Project Milestone | Completed |
 **November 24th** | Continue writing and testing initial implementation|  In-progress |
