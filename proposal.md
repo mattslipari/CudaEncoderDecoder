@@ -62,6 +62,6 @@ Appleyard, Jeremy, Tomas Kocisky, and Phil Blunsom. "Optimizing performance of r
 **November 28th** | Finish initial code |  |
 **December 1st**  | Start writing code for an RNN  |  |
 **December 5th** | Finish writing RNN code |  |
-**November 8th** | Write the Encoder-Decoder RNN and test |  |
+**December 8th** | Write the Encoder-Decoder RNN and test |  |
 **December 12th** | Attempt our additional goals |  |
 **December 15th**  | Complete final version of code |  |
