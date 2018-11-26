@@ -14,6 +14,7 @@ public:
     virtual void updateWeight() = 0;
     virtual void clearGrad() = 0;
 
+
     virtual cuMatrix<float>* getOutputs() = 0;
 
     virtual void printParameter() = 0;
