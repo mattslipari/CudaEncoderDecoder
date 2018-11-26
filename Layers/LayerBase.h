@@ -1,9 +1,9 @@
 #ifndef __LAYERS_BASE_CU_H__
 #define __LAYERS_BASE_CU_H__
 
+#include <string>
+#include <vector>
 #include "../Common/cuMatrix.h"
-#include "../Common/cuMatrixVector.h"
-#include "../Common/util.h"
 
 class LayerBase
 {

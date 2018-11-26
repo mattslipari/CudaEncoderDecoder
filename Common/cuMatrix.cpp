@@ -22,10 +22,6 @@ cublasHandle_t& getHandle()
 /*z = x * y*/
 void matrixMul(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
 {
-    if(x->channels != 1 || y->channels != 1 || z->channels != 1){
-        printf("matrix mul chanels != 1\n");
-        exit(0);
-    }
     if(x->cols != y->rows || z->rows != x->rows || z->cols != y->cols){
         printf("matrix mul chanels != 1\n");
         exit(0);
@@ -62,11 +58,6 @@ void matrixMul(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
 /*z = T(x) * y*/
 void matrixMulTA(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
 {
-    if(x->channels != 1 || y->channels != 1 || z->channels != 1){
-        printf("matrix mul chanels != 1\n");
-        exit(0);
-    }
-
     if(x->rows != y->rows || z->rows != x->cols || z->cols != y->cols){
         printf("matrix mul chanels != 1\n");
         exit(0);
@@ -100,10 +91,6 @@ void matrixMulTA(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
 /*z = x * T(y)*/
 void matrixMulTB(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
 {
-    if(x->channels != 1 || y->channels != 1 || z->channels != 1){
-        printf("matrix mul chanels != 1\n");
-        exit(0);
-    }
     if(x->cols != y->cols || z->rows != x->rows || z->cols != y->rows){
         printf("matrix mul chanels != 1\n");
         exit(0);
