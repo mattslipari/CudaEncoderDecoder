@@ -10,8 +10,6 @@
 
 #include "cublas_v2.h"
 
-#define IDX2C(i, j, ld) (((j)*(ld))+(i))
-
 __global__ void relu(float *input, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= n) return;
