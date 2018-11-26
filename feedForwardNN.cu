@@ -31,6 +31,30 @@ __global__ void softmax(float *A, float* p, int n)
     }
 }
 
+void print_device_matrix(float* x, int n, int m) {
+    printf("Printing Matrix %dx%d...", n, m);
+
+    float* tmp = (float *) malloc(n * m *sizeof(*x));
+    cublasGetMatrix(n, m, sizeof(*x), x, n, tmp, n);
+
+    for (int i = 0; i < n*m; i++) {
+        if (i % m == 0) printf("\n");
+        printf("%7.0f", tmp[i]);
+    }
+    printf("\n");
+    free(tmp);
+}
+
+void print_host_matrix(float* x, int n, int m) {
+    printf("Printing Matrix %dx%d...", n, m);
+
+    for (int i = 0; i < n*m; i++) {
+        if (i % m == 0) printf("\n");
+        printf("%7.0f", x[i]);
+    }
+    printf("\n");
+}
+
 void fully_connected(cublasHandle_t* handle,float* x, float* y, float* w, int n, int m){
     float alpha = 1;
     float beta = 0;
@@ -42,14 +66,7 @@ void fully_connected(cublasHandle_t* handle,float* x, float* y, float* w, int n,
                 &beta,
                 y, 1);
     dim3 blockDim(16);
-
-    printf("after sgemv\n");
-
-    float* tmp = (float *)malloc(n*sizeof(*y));
-    cublasGetVector(n,sizeof(*y),y,1,tmp,1); //cp d_c->c printf("c after Sgemm :\n");
-    for(int i=0;i<n;i++) {
-	    printf("%7.0f", tmp[i]); //print c after Sgemm
-	  }
+    print_device_matrix(y, n, 1);
 
     relu<<<blockDim,1>>> (y, n);
 
@@ -57,9 +74,9 @@ void fully_connected(cublasHandle_t* handle,float* x, float* y, float* w, int n,
 
 void forward(float* x, float* w1, float* w2,float* y, float* loss, int n, int m) {
     // cudaError_t cudaStat;
-    // cublasStatus_t stat;
+    cublasStatus_t stat;
     cublasHandle_t handle;
-    // stat = cublasCreate(&handle);
+    stat = cublasCreate(&handle);
     dim3 blockDim(16);
     float* output1;
     float* output2;
