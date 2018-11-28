@@ -24,13 +24,13 @@ private:
     cuMatrix<float> *outputs;
 
     cuMatrix<float> *w;
-
     cuMatrix<float> *b;
 
     int inputsize;
     int outputsize;
     float lambda;
     int batch;
+    int units;
 };
 
 

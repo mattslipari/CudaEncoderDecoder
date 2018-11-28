@@ -105,24 +105,19 @@ public:
     }
 
     /*set  value*/
-    void set(int i, int j, int k, T v){
+    void set(int i, int j, T v){
         mallocHost();
-        hostData[(i * cols + j) + cols * rows * k] = v;
+        hostData[i * cols + j] = v;
     }
 
     /*get value*/
-    T get(int i, int j, int k){
+    T get(int i, int j){
         mallocHost();
-        return hostData[(i * cols + j) + cols * rows * k];
+        return hostData[i * cols + j];
     }
 
     /*get the number of values*/
     int getLen(){
-        return rows * cols;
-    }
-
-    /*get rows * cols*/
-    int getArea(){
         return rows * cols;
     }
 
