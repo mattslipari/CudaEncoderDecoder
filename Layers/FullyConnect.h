@@ -5,7 +5,8 @@
 
 class FullyConnect : LayerBase {
 public:
-    cuMatrix<float> * feedforward(cuMatrix<float> *inputs);
+
+    cuMatrix<float> * feedforward();
 
     void backpropagation();
 
@@ -25,7 +26,7 @@ private:
 
     cuMatrix<float> *w;
     cuMatrix<float> *b;
-
+    int units;
     int inputsize;
     int outputsize;
     float lambda;
