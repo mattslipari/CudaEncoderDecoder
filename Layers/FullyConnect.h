@@ -3,7 +3,7 @@
 
 #include "LayerBase.h"
 
-class FullyConnect : LayerBase {
+class FullyConnect : public LayerBase {
 public:
 
     FullyConnect(cuMatrix<float> *inputs, int units);
