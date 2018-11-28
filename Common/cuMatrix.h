@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> 
 #include "helper_cuda.h"
 #include "MemoryMonitor.h"
 
@@ -15,15 +16,16 @@ class cuMatrix
 {
 public:
     /*constructed function with hostData*/
-    cuMatrix(T *_data, int _n,int _m, int _c):rows(_n), cols(_m), hostData(NULL), devData(NULL){
+    cuMatrix(T *_data, int _n,int _m):rows(_n), cols(_m), hostData(NULL), devData(NULL){
         /*malloc host data*/
         mallocHost();
+        srand(time(0));
         /*deep copy */
         memcpy(hostData, _data, sizeof(*hostData) * cols * rows);
     }
 
     /*constructed function with rows and cols*/
-    cuMatrix(int _n,int _m, int _c):rows(_n), cols(_m), hostData(NULL), devData(NULL){
+    cuMatrix(int _n,int _m):rows(_n), cols(_m), hostData(NULL), devData(NULL){
     }
 
     /*free cuda memery*/
@@ -90,6 +92,16 @@ public:
     void cpuClear(){
         mallocHost();
         memset(hostData, 0, cols * rows *sizeof(*hostData));
+    }
+
+    void setAllRandom(float lb, float ub) {
+        mallocHost();
+        for (int j = 0; j < rows; j++) {
+            for (int i = 0; i < cols; i++) {
+                float rand_val = lb + ((float)(rand()) /((float)(RAND_MAX/(ub-lb))));
+                hostData[i * cols + j] = rand_val;
+            }
+        }
     }
 
     /*set  value*/
