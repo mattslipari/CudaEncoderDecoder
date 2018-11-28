@@ -104,6 +104,19 @@ public:
         }
     }
 
+    void printHost() {
+        mallocHost();
+        printf("Printing Matrix %dx%d...", rows, cols);
+
+        for (int i = 0; i < rows; i++) {
+            printf("\n");
+            for (int j = 0; j < cols; j++) {
+                printf("%7.0f", hostData[i * cols + j]);
+            }
+        }
+        printf("\n");
+    }
+
     /*set  value*/
     void set(int i, int j, T v){
         mallocHost();
