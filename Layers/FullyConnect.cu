@@ -19,6 +19,10 @@ void FullyConnect::initRandom() {
 }
 
 void FullyConnect::feedforward() {
+    this->w->toGpu();
+    this->b->toGpu();
+    this->inputs->toGpu();
+    this->outputs->toGpu();
     matrixMul(this->w, this->inputs, this->outputs);
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((this->outputs->cols + blockDim.x - 1) / blockDim.x,
