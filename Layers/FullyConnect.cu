@@ -7,15 +7,25 @@ __global__ void relu(float *inout, float *bias, int rows, int cols) {
     int i = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (j >= cols || i >= rows) return;
-    inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[i * cols]);
+    inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[j]);
 }
 
 void FullyConnect::initRandom() {
     this->w = new cuMatrix<float>(this->units, this->inputs->rows);
     this->b = new cuMatrix<float>(this->units, 1);
 
-    this->w->setAllRandom(-1, 1);
-    this->b->setAllRandom(-1, 1);
+    // this->w->setAllRandom(-1, 1);
+    // this->b->setAllRandom(-1, 1);
+
+    for (int j = 0; j < this->inputs->rows; j++) {
+        for (int i = 0; i < this->units; i++) {
+            this->w->set(i, j, j + 1);
+        }
+    }
+
+    for (int i = 0; i < this->units; i++) {
+        this->b->set(i, 0, 1);
+    }
 }
 
 void FullyConnect::feedforward() {
@@ -24,6 +34,9 @@ void FullyConnect::feedforward() {
     this->inputs->toGpu();
     this->outputs->toGpu();
     matrixMul(this->w, this->inputs, this->outputs);
+    this->w->printHost();
+    this->b->printHost();
+    this->inputs->printHost();
     this->outputs->toCpu();
     this->outputs->printHost();
     dim3 blockDim(16, 16, 1);
