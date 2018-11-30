@@ -34,11 +34,7 @@ void FullyConnect::feedforward() {
     this->inputs->toGpu();
     this->outputs->toGpu();
     matrixMul(this->w, this->inputs, this->outputs);
-    this->w->printHost();
-    this->b->printHost();
-    this->inputs->printHost();
-    this->outputs->toCpu();
-    this->outputs->printHost();
+
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((this->outputs->cols + blockDim.x - 1) / blockDim.x,
                  (this->outputs->rows + blockDim.y - 1) / blockDim.y);
@@ -50,7 +46,18 @@ cuMatrix<float> *FullyConnect::getOutputs() {
 }
 
 void FullyConnect::printParameter() {
-
+    this->w->toCpu();
+    this->b->toCpu();
+    printf("weights:\n");
+    this->w->printHost();
+    printf("bias:\n");
+    this->b->printHost();
+    this->inputs->toCpu();
+    printf("inputs:\n");
+    this->inputs->printHost();
+    this->outputs->toCpu();
+    printf("outputs:\n");
+    this->outputs->printHost();
 }
 
 void FullyConnect::backpropagation() {
