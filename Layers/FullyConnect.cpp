@@ -10,14 +10,6 @@ __global__ void relu(float *inout, float *bias, int rows, int cols) {
     inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[i * cols]));
 }
 
-FullyConnect::FullyConnect(cuMatrix<float> *inputs, int units) {
-    this->units = units;
-    this->inputs = inputs;
-    this->batch = inputs->cols;
-
-    this->initRandom();
-}
-
 void FullyConnect::initRandom() {
     this->w = new cuMatrix<float>(this->units, this->inputs->rows);
     this->b = new cuMatrix<float>(this->units, 1);

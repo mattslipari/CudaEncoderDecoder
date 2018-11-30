@@ -6,7 +6,17 @@
 class FullyConnect : public LayerBase {
 public:
 
-    FullyConnect(cuMatrix<float> *inputs, int units);
+    FullyConnect(cuMatrix<float> *inputs, int units){
+        this->units = units;
+        this->inputs = inputs;
+        this->batch = inputs->cols;
+
+        this->initRandom();
+    }
+
+    ~FullyConnect(){
+
+    }
 
     void feedforward();
 
