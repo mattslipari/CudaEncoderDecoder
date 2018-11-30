@@ -9,6 +9,7 @@ int main() {
     }
     cuMatrix<float> inputs(data,2,3);
     FullyConnect fc(&inputs, 3);
+    fc.feedforward();
     cuMatrix<float> *outputs=fc.getOutputs();
     outputs->toCpu();
     outputs->printHost();

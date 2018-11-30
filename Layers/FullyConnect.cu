@@ -24,6 +24,8 @@ void FullyConnect::feedforward() {
     this->inputs->toGpu();
     this->outputs->toGpu();
     matrixMul(this->w, this->inputs, this->outputs);
+    this->outputs->toCpu();
+    this->outputs->printHost();
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((this->outputs->cols + blockDim.x - 1) / blockDim.x,
                  (this->outputs->rows + blockDim.y - 1) / blockDim.y);
