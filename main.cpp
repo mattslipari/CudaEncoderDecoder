@@ -1,5 +1,6 @@
 #include "Layers/FullyConnect.h"
 
 int main(){
-    FullyConnect fc=new FullyConnect();
+    cuMatrix<float> *inputs;
+    FullyConnect fc=new FullyConnect(inputs,50);
 }

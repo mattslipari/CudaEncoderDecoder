@@ -178,7 +178,7 @@ private:
                 exit(0);
             }
 
-            cudaStat = cudaMemset(devData, 0, sizeof(*devData) * cols * rows * channels);
+            cudaStat = cudaMemset(devData, 0, sizeof(*devData) * cols * rows);
             if(cudaStat != cudaSuccess) {
                 printf("cuMatrix::cuMatrix device memory cudaMemset failed\n");
                 exit(0);

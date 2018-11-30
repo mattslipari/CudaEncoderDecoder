@@ -54,6 +54,10 @@ void FullyConnect::updateWeight() {
 
 }
 
+void FullyConnect::clearGrad() {
+
+}
+
 
 
 

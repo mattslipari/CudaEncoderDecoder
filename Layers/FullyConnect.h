@@ -16,6 +16,8 @@ public:
 
     void updateWeight();
 
+    void clearGrad();
+
     cuMatrix<float> *getOutputs();
 
     void initRandom();
