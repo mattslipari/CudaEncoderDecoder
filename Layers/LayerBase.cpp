@@ -1,5 +1,4 @@
 #include "LayerBase.h"
-#include "../common/cuMatrixVector.h"
 
 LayerBase* Layers::get(std::string name)
 {
