@@ -18,22 +18,29 @@ cublasHandle_t &getHandle() {
     return handle;
 }
 
-void transpose(cuMatrix<float> *x, cuMatrix<float> *y) {
-    cublasStatus_t stat;
+/*matrix transpose*/
+/*x = T(x)*/
+void matrixTranspose(cuMatrix<float>* x) {
     float alpha = 1.0;
     float beta = 0.0;
-    stat = cublasSgeam(getHandle(),
-                       CUBLAS_OP_T, CUBLAS_OP_N,
-                       x->rows, x->cols,
-                       &alpha,
-                       x->getDev(), x->cols,
-                       &beta,
-                       NULL, x->rows,
-                       y->getDev(), x->rows);
-    if (stat != CUBLAS_STATUS_SUCCESS) {
-        printf("cuMatrix::cuMatrix device memory allocation failed\n");
-        exit(0);
-    }
+    float *y;
+    cudaMalloc(&y, x->rows * x->cols * sizeof(float));
+    cudaMemcpy(y, x->getDev(), x->rows * x->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+
+    cublasSgeam(getHandle(),
+                CUBLAS_OP_T,
+                CUBLAS_OP_N,
+                x->rows, x->cols,
+                &alpha,
+                y, x->cols,
+                &beta,
+                NULL, x->rows,
+                x->getDev(), x->rows);
+
+    int temp_r = x->rows;
+    x->rows = x->cols;
+    x->cols = temp_r;
+    cudaFree(y);
 }
 
 /*matrix multiply*/
