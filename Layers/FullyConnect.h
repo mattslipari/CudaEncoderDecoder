@@ -22,7 +22,7 @@ public:
 
     void feedforward();
 
-    void backpropagation();
+    void backpropagation(cuMatrix<float>* pre_grad);
 
     void getGrad();
 
@@ -39,9 +39,10 @@ public:
 private:
     cuMatrix<float> *inputs;
     cuMatrix<float> *outputs;
-
+    cuMatrix<float> *w_grad;
+    cuMatrix<float> *b_grad;
+    cuMatrix<float> *inputs_grad;
     cuMatrix<float> *w;
-
     cuMatrix<float> *b;
     int units;
 

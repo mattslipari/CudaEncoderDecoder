@@ -195,4 +195,5 @@ void matrixMul   (cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z);
 void matrixMulTA (cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z);
 /*z = x * T(y)*/
 void matrixMulTB (cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z);
+void transpose(cuMatrix<float>* x,cuMatrix<float>* y);
 #endif

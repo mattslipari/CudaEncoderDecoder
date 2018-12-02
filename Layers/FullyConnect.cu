@@ -7,7 +7,25 @@ __global__ void relu(float *inout, float *bias, int rows, int cols) {
     int i = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (j >= cols || i >= rows) return;
-    inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[j]);
+    inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[i]);
+}
+
+__global__ void relu_grad(float *pre_grad, float *output, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    if (output[i * cols + j] <= 0)
+        pre_grad[i * cols + j] = 0;
+}
+
+__global__ void bias_grad(float *pre_grad, float *output, int rows, int cols) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= rows) return;
+    output[i] = 0;
+    for (int k = 0; k < cols; k++) {
+        output[i] = pre_grad[i * cols + k];
+    }
 }
 
 void FullyConnect::initRandom() {
@@ -24,7 +42,7 @@ void FullyConnect::initRandom() {
     }
 
     for (int i = 0; i < this->units; i++) {
-        this->b->set(i, 0, 1);
+        this->b->set(i, 0, i);
     }
 }
 
@@ -38,7 +56,7 @@ void FullyConnect::feedforward() {
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((this->outputs->cols + blockDim.x - 1) / blockDim.x,
                  (this->outputs->rows + blockDim.y - 1) / blockDim.y);
-    relu <<< blockDim, gridDim >>> (outputs->getDev(), this->b->getDev(), this->units, this->batch);
+    relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
 }
 
 cuMatrix<float> *FullyConnect::getOutputs() {
@@ -60,8 +78,17 @@ void FullyConnect::printParameter() {
     this->outputs->printHost();
 }
 
-void FullyConnect::backpropagation() {
-
+void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
+    dim3 blockDim(16, 16, 1);
+    dim3 gridDim((outputs->cols + blockDim.x - 1) / blockDim.x,
+                 (outputs->rows + blockDim.y - 1) / blockDim.y);
+    relu_grad << < blockDim, gridDim >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
+    dim3 blockDim(256);
+    dim3 gridDim((b->rows + blockDim.x - 1) / blockDim.x);
+    bias_grad << < blockDim, gridDim >> > (pre_grad->getDev(), w_grad->getDev(), pre_grad->rows, pre_grad->cols);
+    matrixMulTA(pre_grad, w, inputs_grad);
+    matrixMulTB(pre_grad, inputs, w_grad);
+    martrixTranspose(inputs_grad);
 }
 
 void FullyConnect::getGrad() {

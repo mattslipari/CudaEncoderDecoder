@@ -5,24 +5,41 @@
 #include "cublas_v2.h"
 
 
-cublasHandle_t& getHandle()
-{
+cublasHandle_t &getHandle() {
     static cublasHandle_t handle = NULL;
-    if(handle == NULL){
+    if (handle == NULL) {
         cublasStatus_t stat;
         stat = cublasCreate(&handle);
-        if(stat != CUBLAS_STATUS_SUCCESS) {
-            printf ("init: CUBLAS initialization failed\n");
+        if (stat != CUBLAS_STATUS_SUCCESS) {
+            printf("init: CUBLAS initialization failed\n");
             exit(0);
         }
     }
     return handle;
 }
+
+void transpose(cuMatrix<float> *x, cuMatrix<float> *y) {
+    cublasStatus_t stat;
+    float alpha = 1.0;
+    float beta = 0.0;
+    stat = cublasSgeam(getHandle(),
+                       CUBLAS_OP_T, CUBLAS_OP_N,
+                       x->rows, x->cols,
+                       &alpha,
+                       x->getDev(), x->cols,
+                       &beta,
+                       NULL, x->rows,
+                       y->getDev(), x->rows);
+    if (stat != CUBLAS_STATUS_SUCCESS) {
+        printf("cuMatrix::cuMatrix device memory allocation failed\n");
+        exit(0);
+    }
+}
+
 /*matrix multiply*/
 /*z = x * y*/
-void matrixMul(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
-{
-    if(x->cols != y->rows || z->rows != x->rows || z->cols != y->cols){
+void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    if (x->cols != y->rows || z->rows != x->rows || z->cols != y->cols) {
         printf("matrix mul chanels != 1\n");
         exit(0);
     }
@@ -46,7 +63,7 @@ void matrixMul(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
             z->cols);
     cudaStreamSynchronize(0);
     getLastCudaError("matrixMul");
-    if(stat != CUBLAS_STATUS_SUCCESS) {
+    if (stat != CUBLAS_STATUS_SUCCESS) {
         printf("matrixMul cublasSgemm error\n");
         cudaFree(x->getDev());
         cudaFree(y->getDev());
@@ -56,9 +73,8 @@ void matrixMul(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
 }
 
 /*z = T(x) * y*/
-void matrixMulTA(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
-{
-    if(x->rows != y->rows || z->rows != x->cols || z->cols != y->cols){
+void matrixMulTA(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    if (x->rows != y->rows || z->rows != x->cols || z->cols != y->cols) {
         printf("matrix mul chanels != 1\n");
         exit(0);
     }
@@ -82,16 +98,15 @@ void matrixMulTA(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
             z->cols);
     cudaStreamSynchronize(0);
     getLastCudaError("matrixMulTA");
-    if(stat != CUBLAS_STATUS_SUCCESS) {
-        printf( "matrixMulTA cublasSgemm error\n");
+    if (stat != CUBLAS_STATUS_SUCCESS) {
+        printf("matrixMulTA cublasSgemm error\n");
         exit(0);
     }
 }
 
 /*z = x * T(y)*/
-void matrixMulTB(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
-{
-    if(x->cols != y->cols || z->rows != x->rows || z->cols != y->rows){
+void matrixMulTB(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    if (x->cols != y->cols || z->rows != x->rows || z->cols != y->rows) {
         printf("matrix mul chanels != 1\n");
         exit(0);
     }
@@ -115,7 +130,7 @@ void matrixMulTB(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
             z->cols);
     cudaStreamSynchronize(0);
     getLastCudaError("matrixMulTB");
-    if(stat != CUBLAS_STATUS_SUCCESS) {
+    if (stat != CUBLAS_STATUS_SUCCESS) {
         printf("matrixMulTB cublasSgemm error\n");
         exit(0);
     }
