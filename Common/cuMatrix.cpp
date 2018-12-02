@@ -18,6 +18,32 @@ cublasHandle_t& getHandle()
     }
     return handle;
 }
+
+/*matrix transpose*/
+/*x = T(x)*/
+void matrixTranspose(cuMatrix<float>* x) {
+    float alpha = 1.0;
+    float beta = 0.0;
+    float *y;
+    cudaMalloc(&y, x->rows * x->cols * sizeof(float));
+    cudaMemcpy(y, x->getDev(), x->rows * x->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+
+    cublasSgeam(getHandle(),
+                CUBLAS_OP_T, 
+                CUBLAS_OP_N,
+                x->rows, x->cols,
+                &alpha,
+                y, x->cols,
+                &beta,
+                NULL, x->rows,
+                x->getDev(), x->rows);
+
+    int temp_r = x->rows;
+    x->rows = x->cols;
+    x->cols = temp_r;
+    cudaFree(y);
+}
+
 /*matrix multiply*/
 /*z = x * y*/
 void matrixMul(cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z)
