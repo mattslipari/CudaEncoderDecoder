@@ -11,6 +11,9 @@ public:
         this->inputs = inputs;
         this->batch = inputs->cols;
         this->outputs = new cuMatrix<float>(units, batch);
+        this->inputs_grad = new cuMatrix<float>(inputs->cols, inputs->cols);
+        this->w_grad = new cuMatrix<float>(inputs->cols,inputs->rows);
+        this->b_grad = new cuMatrix<float>(inputs->cols, 1);
         this->outputs->cpuClear();
 
         this->initRandom();
