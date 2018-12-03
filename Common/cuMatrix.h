@@ -106,6 +106,7 @@ public:
 
     void printHost() {
         mallocHost();
+        toCpu();
         printf("Printing Matrix %dx%d...", rows, cols);
 
         for (int i = 0; i < rows; i++) {

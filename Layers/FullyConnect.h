@@ -14,7 +14,7 @@ public:
         
         this->inputs_grad = new cuMatrix<float>(inputs->rows, inputs->cols);
         this->w_grad = new cuMatrix<float>(units, inputs->rows);
-        this->b_grad = new cuMatrix<float>(inputs->cols, 1);
+        this->b_grad = new cuMatrix<float>(units, 1);
 
         this->outputs->cpuClear();
 
@@ -43,12 +43,12 @@ public:
 
 private:
     cuMatrix<float> *inputs;
-    cuMatrix<float> *outputs;
+    cuMatrix<float> *outputs; // units x batch
     cuMatrix<float> *w_grad;
     cuMatrix<float> *b_grad;
-    cuMatrix<float> *inputs_grad;
-    cuMatrix<float> *w;
-    cuMatrix<float> *b;
+    cuMatrix<float> *inputs_grad; // units x batch
+    cuMatrix<float> *w; // units x input_row
+    cuMatrix<float> *b; // units x 1
     int units;
 
     float lambda;
