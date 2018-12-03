@@ -50,7 +50,7 @@ void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float
     stat = cublasSgeam(getHandle(),
                        CUBLAS_OP_N,
                        CUBLAS_OP_N,
-                       x->cols, y->cols,
+                       x->cols, y->rows,
                        &alpha,
                        x->getDev(), x->cols,
                        &lambda,
