@@ -14,7 +14,7 @@ int main() {
     cuMatrix<float> pre_grad(grad, 3, 4);
     pre_grad.toGpu();
     cuMatrix<float> inputs(data, 2, 4);
-    FullyConnect fc(&inputs, 3);
+    FullyConnect fc(&inputs, 3, 0.01);
     fc.feedforward();
     fc.backpropagation(&pre_grad);
     fc.printParameter();

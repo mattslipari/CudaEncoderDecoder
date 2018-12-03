@@ -83,7 +83,7 @@ void FullyConnect::printParameter() {
 void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     dim3 blockDim_r(16, 16, 1);
     dim3 gridDim_r((outputs->cols + blockDim_r.x - 1) / blockDim_r.x,
-                 (outputs->rows + blockDim_r.y - 1) / blockDim_r.y);
+                   (outputs->rows + blockDim_r.y - 1) / blockDim_r.y);
     relu_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
     printf("after relu\n");
     pre_grad->printHost();
@@ -94,6 +94,7 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     matrixMulTA(pre_grad, w, inputs_grad);
     matrixTranspose(inputs_grad);
     matrixMulTB(pre_grad, inputs, w_grad);
+    updateWeight();
 }
 
 cuMatrix<float> *FullyConnect::getGrad() {
@@ -101,5 +102,6 @@ cuMatrix<float> *FullyConnect::getGrad() {
 }
 
 void FullyConnect::updateWeight() {
-
+    matrixSub(w, w_grad, w, lambda);
+    matrixSub(b, b_grad, b, lambda);
 }
