@@ -96,18 +96,10 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     matrixMulTB(pre_grad, inputs, w_grad);
 }
 
-void FullyConnect::getGrad() {
-
+cuMatrix<float> *FullyConnect::getGrad() {
+    return this->inputs_grad;
 }
 
 void FullyConnect::updateWeight() {
 
 }
-
-void FullyConnect::clearGrad() {
-
-}
-
-
-
-
