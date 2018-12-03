@@ -6,17 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> 
+#include <time.h>
 #include "helper_cuda.h"
 #include "MemoryMonitor.h"
 
 /*rows-major*/
-template <class T>
-class cuMatrix
-{
+template<class T>
+class cuMatrix {
 public:
     /*constructed function with hostData*/
-    cuMatrix(T *_data, int _n,int _m):rows(_n), cols(_m), hostData(NULL), devData(NULL){
+    cuMatrix(T *_data, int _n, int _m) : rows(_n), cols(_m), hostData(NULL), devData(NULL) {
         /*malloc host data*/
         mallocHost();
         srand(time(0));
@@ -25,33 +24,33 @@ public:
     }
 
     /*constructed function with rows and cols*/
-    cuMatrix(int _n,int _m):rows(_n), cols(_m), hostData(NULL), devData(NULL){
+    cuMatrix(int _n, int _m) : rows(_n), cols(_m), hostData(NULL), devData(NULL) {
     }
 
     /*free cuda memery*/
-    void freeCudaMem(){
-        if(NULL != devData){
+    void freeCudaMem() {
+        if (NULL != devData) {
             MemoryMonitor::instance()->freeGpuMemory(devData);
             devData = NULL;
         }
     }
 
     /*destruction function*/
-    ~cuMatrix(){
-        if(NULL != hostData)
+    ~cuMatrix() {
+        if (NULL != hostData)
             MemoryMonitor::instance()->freeCpuMemory(hostData);
-        if(NULL != devData)
+        if (NULL != devData)
             MemoryMonitor::instance()->freeGpuMemory(devData);
     }
 
     /*copy the device data to host data*/
-    void toCpu(){
+    void toCpu() {
         cudaError_t cudaStat;
         mallocDev();
         mallocHost();
-        cudaStat = cudaMemcpy (hostData, devData, sizeof(*devData) * cols * rows, cudaMemcpyDeviceToHost);
+        cudaStat = cudaMemcpy(hostData, devData, sizeof(*devData) * cols * rows, cudaMemcpyDeviceToHost);
 
-        if(cudaStat != cudaSuccess) {
+        if (cudaStat != cudaSuccess) {
             printf("cuMatrix::toCPU data download failed\n");
             MemoryMonitor::instance()->freeGpuMemory(devData);
             exit(0);
@@ -59,13 +58,13 @@ public:
     }
 
     /*copy the host data to device data*/
-    void toGpu(){
+    void toGpu() {
         cudaError_t cudaStat;
         mallocDev();
         mallocHost();
-        cudaStat = cudaMemcpy (devData, hostData, sizeof(*devData) * cols * rows , cudaMemcpyHostToDevice);
+        cudaStat = cudaMemcpy(devData, hostData, sizeof(*devData) * cols * rows, cudaMemcpyHostToDevice);
 
-        if(cudaStat != cudaSuccess) {
+        if (cudaStat != cudaSuccess) {
             printf("cuMatrix::toGPU data upload failed\n");
             MemoryMonitor::instance()->freeGpuMemory(devData);
             exit(0);
@@ -73,32 +72,33 @@ public:
     }
 
     /*copy the host data to device data with cuda-streams*/
-    void toGpu(cudaStream_t stream1){
+    void toGpu(cudaStream_t stream1) {
         mallocDev();
-        checkCudaErrors(cudaMemcpyAsync(devData, hostData, sizeof(*devData) * cols * rows , cudaMemcpyHostToDevice, stream1));
+        checkCudaErrors(
+                cudaMemcpyAsync(devData, hostData, sizeof(*devData) * cols * rows, cudaMemcpyHostToDevice, stream1));
     }
 
     /*set all device memory to be zeros*/
-    void gpuClear(){
+    void gpuClear() {
         mallocDev();
         cudaError_t cudaStat;
-        cudaStat = cudaMemset(devData,0,sizeof(*devData) * cols * rows);
-        if(cudaStat != cudaSuccess) {
+        cudaStat = cudaMemset(devData, 0, sizeof(*devData) * cols * rows);
+        if (cudaStat != cudaSuccess) {
             printf("device memory cudaMemset failed\n");
             exit(0);
         }
     }
 
-    void cpuClear(){
+    void cpuClear() {
         mallocHost();
-        memset(hostData, 0, cols * rows *sizeof(*hostData));
+        memset(hostData, 0, cols * rows * sizeof(*hostData));
     }
 
     void setAllRandom(float lb, float ub) {
         mallocHost();
         for (int j = 0; j < rows; j++) {
             for (int i = 0; i < cols; i++) {
-                float rand_val = lb + ((float)(rand()) /((float)(RAND_MAX/(ub-lb))));
+                float rand_val = lb + ((float) (rand()) / ((float) (RAND_MAX / (ub - lb))));
                 hostData[i * cols + j] = rand_val;
             }
         }
@@ -112,35 +112,35 @@ public:
         for (int i = 0; i < rows; i++) {
             printf("\n");
             for (int j = 0; j < cols; j++) {
-                printf("%7.1f", hostData[i * cols + j]);
+                printf("%8.3f", hostData[i * cols + j]);
             }
         }
         printf("\n");
     }
 
     /*set  value*/
-    void set(int i, int j, T v){
+    void set(int i, int j, T v) {
         mallocHost();
         hostData[i * cols + j] = v;
     }
 
     /*get value*/
-    T get(int i, int j){
+    T get(int i, int j) {
         mallocHost();
         return hostData[i * cols + j];
     }
 
     /*get the number of values*/
-    int getLen(){
+    int getLen() {
         return rows * cols;
     }
 
-    T  *& getHost(){
+    T *&getHost() {
         mallocHost();
         return hostData;
     }
 
-    T  *& getDev(){
+    T *&getDev() {
         mallocDev();
         return devData;
     }
@@ -158,29 +158,30 @@ private:
     /*device data*/
     T *devData;
 private:
-    void mallocHost(){
-        if(NULL == hostData){
+    void mallocHost() {
+        if (NULL == hostData) {
             /*malloc host data*/
-            hostData = (T*)MemoryMonitor::instance()->cpuMalloc(cols * rows *sizeof(*hostData));
-            if(!hostData) {
+            hostData = (T *) MemoryMonitor::instance()->cpuMalloc(cols * rows * sizeof(*hostData));
+            if (!hostData) {
                 printf("cuMatrix:cuMatrix host memory allocation failed\n");
                 exit(0);
             }
             memset(hostData, 0, cols * rows * sizeof(*hostData));
         }
     }
-    void mallocDev(){
-        if(NULL == devData){
+
+    void mallocDev() {
+        if (NULL == devData) {
             cudaError_t cudaStat;
             /*malloc device data*/
-            cudaStat = MemoryMonitor::instance()->gpuMalloc((void**)&devData, cols * rows * sizeof(*devData));
-            if(cudaStat != cudaSuccess) {
+            cudaStat = MemoryMonitor::instance()->gpuMalloc((void **) &devData, cols * rows * sizeof(*devData));
+            if (cudaStat != cudaSuccess) {
                 printf("cuMatrix::cuMatrix device memory allocation failed\n");
                 exit(0);
             }
 
             cudaStat = cudaMemset(devData, 0, sizeof(*devData) * cols * rows);
-            if(cudaStat != cudaSuccess) {
+            if (cudaStat != cudaSuccess) {
                 printf("cuMatrix::cuMatrix device memory cudaMemset failed\n");
                 exit(0);
             }
@@ -191,11 +192,17 @@ private:
 
 /*matrix multiply*/
 /*z = x * y*/
-void matrixMul   (cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z);
+void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda);
+
+void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
+
 /*z = T(x) * y*/
-void matrixMulTA (cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z);
+void matrixMulTA(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
+
 /*z = x * T(y)*/
-void matrixMulTB (cuMatrix<float>* x, cuMatrix<float>*y, cuMatrix<float>*z);
+void matrixMulTB(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
+
 /*x = T(x)*/
-void matrixTranspose (cuMatrix<float>* x);
+void matrixTranspose(cuMatrix<float> *x);
+
 #endif

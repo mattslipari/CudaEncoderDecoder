@@ -6,12 +6,13 @@
 class FullyConnect : public LayerBase {
 public:
 
-    FullyConnect(cuMatrix<float> *inputs, int units) {
+    FullyConnect(cuMatrix<float> *inputs, int units, float lambda) {
         this->units = units;
         this->inputs = inputs;
         this->batch = inputs->cols;
+        this->lambda = lambda;
         this->outputs = new cuMatrix<float>(units, this->batch);
-        
+
         this->inputs_grad = new cuMatrix<float>(inputs->rows, inputs->cols);
         this->w_grad = new cuMatrix<float>(units, inputs->rows);
         this->b_grad = new cuMatrix<float>(units, 1);
@@ -27,7 +28,7 @@ public:
 
     void feedforward();
 
-    void backpropagation(cuMatrix<float>* pre_grad);
+    void backpropagation(cuMatrix<float> *pre_grad);
 
     void getGrad();
 

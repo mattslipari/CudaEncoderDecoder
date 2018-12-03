@@ -20,7 +20,7 @@ cublasHandle_t &getHandle() {
 
 /*matrix transpose*/
 /*x = T(x)*/
-void matrixTranspose(cuMatrix<float>* x) {
+void matrixTranspose(cuMatrix<float> *x) {
     float alpha = 1.0;
     float beta = 0.0;
     float *y;
@@ -41,6 +41,30 @@ void matrixTranspose(cuMatrix<float>* x) {
     x->rows = x->cols;
     x->cols = temp_r;
     cudaFree(y);
+}
+
+void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda) {
+    lambda = -lambda;
+    float alpha = 1.0;
+    cublasStatus_t stat;
+    stat = cublasSgeam(getHandle(),
+                       CUBLAS_OP_N,
+                       CUBLAS_OP_N,
+                       x->cols, y->cols,
+                       &alpha,
+                       x->getDev(), x->cols,
+                       &lambda,
+                       y->getDev(), y->cols,
+                       z->getDev(), z->cols);
+    cudaStreamSynchronize(0);
+    getLastCudaError("matrixAdd");
+    if (stat != CUBLAS_STATUS_SUCCESS) {
+        printf("matrixAdd cublasSgemm error\n");
+        cudaFree(x->getDev());
+        cudaFree(y->getDev());
+        cudaFree(z->getDev());
+        exit(0);
+    }
 }
 
 /*matrix multiply*/
