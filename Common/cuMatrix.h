@@ -111,7 +111,7 @@ public:
         for (int i = 0; i < rows; i++) {
             printf("\n");
             for (int j = 0; j < cols; j++) {
-                printf("%7.0f", hostData[i * cols + j]);
+                printf("%7.1f", hostData[i * cols + j]);
             }
         }
         printf("\n");

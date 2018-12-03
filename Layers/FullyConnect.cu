@@ -80,14 +80,15 @@ void FullyConnect::printParameter() {
 
 void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     dim3 blockDim_r(16, 16, 1);
-    dim3 gridDim_r((outputs->cols + blockDim.x - 1) / blockDim.x,
-                 (outputs->rows + blockDim.y - 1) / blockDim.y);
+    dim3 gridDim_r((outputs->cols + blockDim_r.x - 1) / blockDim_r.x,
+                 (outputs->rows + blockDim_r.y - 1) / blockDim_r.y);
     relu_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
     
     dim3 blockDim_b(256);
-    dim3 gridDim_b((b->rows + blockDim.x - 1) / blockDim.x);
+    dim3 gridDim_b((b->rows + blockDim_b.x - 1) / blockDim_b.x);
     bias_grad << < blockDim_b, gridDim_b >> > (pre_grad->getDev(), b_grad->getDev(), pre_grad->rows, pre_grad->cols);
     
+    matrixTranspose(inputs_grad);
     matrixMulTA(pre_grad, w, inputs_grad);
     matrixTranspose(inputs_grad);
     matrixMulTB(pre_grad, inputs, w_grad);
