@@ -10,6 +10,41 @@ __global__ void relu(float *inout, float *bias, int rows, int cols) {
     inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[i]);
 }
 
+__global__ void sigmoid(float *inout, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    t = inout[i * cols + j];
+    inout[i * cols + j] = 1 / (1 + expf(-x));
+}
+
+__global__ void sigmoid_grad(float *pre_grad, float *output, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    t = output[i * cols + j];
+    pre_grad[i * cols + j] *= t * (1 - t);
+}
+
+__global__ void tanh(float *inout, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    inout[i * cols + j] = tanhf(inout[i * cols + j]);
+}
+
+__global__ void tanh_grad(float *pre_grad, float *output, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    t = output[i * cols + j];
+    pre_grad[i * cols + j] *= 1 - t * t;
+}
+
 __global__ void relu_grad(float *pre_grad, float *output, int rows, int cols) {
     int j = blockIdx.x * blockDim.x + threadIdx.x;
     int i = blockIdx.y * blockDim.y + threadIdx.y;
