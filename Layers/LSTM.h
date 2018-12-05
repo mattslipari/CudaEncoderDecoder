@@ -18,6 +18,9 @@ class LSTM : public LayerBase {
     void initRandom();
 
     void printParameter();
+
+private:
+
 };
 
 

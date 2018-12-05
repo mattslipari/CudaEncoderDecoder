@@ -18,6 +18,26 @@ cublasHandle_t &getHandle() {
     return handle;
 }
 
+__global__ void elementwiseMul(float *x, float *y, float *z, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    z[i * cols + j] = x[i * cols + j] * y[i * cols + j];
+}
+
+void matrixElementWiseMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    if (x->cols != y->cols || z->cols != x->cols || z->rows != x->rows + y->rows) {
+        printf("matrix elementwise multiply invalid dim\n");
+        exit(0);
+    }
+    dim3 blockDim(16, 16, 1);
+    dim3 gridDim((x->cols + blockDim.x - 1) / blockDim.x,
+                 (x->rows + blockDim.y - 1) / blockDim.y);
+    elementwiseMul <<< blockDim, gridDim >>> (x->getDev(), y->getDev(), z->getDev(), x->rows, x->cols);
+
+}
+
 /*Matrix Concatenation*/
 /*z = [x;y]*/
 void matrixConcat(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
@@ -40,7 +60,8 @@ void matrixSplit(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
     }
 
     cudaMemcpy(y->getDev(), x->getDev(), y->rows * y->cols * sizeof(float), cudaMemcpyDeviceToDevice);
-    cudaMemcpy(z->getDev(), &(x->getDev())[y->rows * y->cols], z->rows * z->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+    cudaMemcpy(z->getDev(), &(x->getDev())[y->rows * y->cols], z->rows * z->cols * sizeof(float),
+               cudaMemcpyDeviceToDevice);
 }
 
 
