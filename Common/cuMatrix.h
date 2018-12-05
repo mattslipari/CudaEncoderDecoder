@@ -190,10 +190,9 @@ private:
 };
 
 
+
 /*matrix multiply*/
 /*z = x * y*/
-void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda);
-
 void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
 /*z = T(x) * y*/
@@ -204,5 +203,14 @@ void matrixMulTB(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
 /*x = T(x)*/
 void matrixTranspose(cuMatrix<float> *x);
+
+/*z = x - (lambda * y)*/
+void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda);
+
+/*z = [x;y]*/
+void matrixConcat(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
+
+/*y = x[1:row][:] z = x[row:end][:]*/
+void matrixSplit(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
 #endif
