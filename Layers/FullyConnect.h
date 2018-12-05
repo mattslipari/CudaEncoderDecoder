@@ -30,11 +30,9 @@ public:
 
     void backpropagation(cuMatrix<float> *pre_grad);
 
-    void getGrad();
+    cuMatrix<float> *getGrad();
 
     void updateWeight();
-
-    void clearGrad();
 
     cuMatrix<float> *getOutputs();
 

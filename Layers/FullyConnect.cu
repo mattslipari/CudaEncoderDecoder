@@ -132,19 +132,11 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     updateWeight();
 }
 
-void FullyConnect::getGrad() {
-
+cuMatrix<float> *FullyConnect::getGrad() {
+    return this->inputs_grad;
 }
 
 void FullyConnect::updateWeight() {
     matrixSub(w, w_grad, w, lambda);
     matrixSub(b, b_grad, b, lambda);
 }
-
-void FullyConnect::clearGrad() {
-
-}
-
-
-
-

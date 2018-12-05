@@ -18,6 +18,32 @@ cublasHandle_t &getHandle() {
     return handle;
 }
 
+/*Matrix Concatenation*/
+/*z = [x;y]*/
+void matrixConcat(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    if (x->cols != y->cols || z->cols != x->cols || z->rows != x->rows + y->rows) {
+        printf("matrix concat invalid dim\n");
+        exit(0);
+    }
+
+    float *res = z->getDev();
+    cudaMemcpy(res, x->getDev(), x->rows * x->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+    cudaMemcpy(&res[x->rows * x->cols], y->getDev(), y->rows * y->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+}
+
+/*Matrix Split*/
+/*y = x[1:row][:] z = x[row:end][:]*/
+void matrixSplit(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    if (x->cols != y->cols || x->cols != z->cols || x->rows != y->rows + z->rows) {
+        printf("matrix split invalid dim\n");
+        exit(0);
+    }
+
+    cudaMemcpy(y->getDev(), x->getDev(), y->rows * y->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+    cudaMemcpy(z->getDev(), &(x->getDev())[y->rows * y->cols], z->rows * z->cols * sizeof(float), cudaMemcpyDeviceToDevice);
+}
+
+
 /*matrix transpose*/
 /*x = T(x)*/
 void matrixTranspose(cuMatrix<float> *x) {
@@ -57,9 +83,9 @@ void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float
                        y->getDev(), y->cols,
                        z->getDev(), z->cols);
     cudaStreamSynchronize(0);
-    getLastCudaError("matrixAdd");
+    getLastCudaError("matrixSub");
     if (stat != CUBLAS_STATUS_SUCCESS) {
-        printf("matrixAdd cublasSgemm error\n");
+        printf("matrixSub cublasSgemm error\n");
         cudaFree(x->getDev());
         cudaFree(y->getDev());
         cudaFree(z->getDev());
