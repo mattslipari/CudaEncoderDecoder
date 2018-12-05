@@ -10,41 +10,6 @@ __global__ void relu(float *inout, float *bias, int rows, int cols) {
     inout[i * cols + j] = fmaxf(0.0, inout[i * cols + j] + bias[i]);
 }
 
-__global__ void sigmoid(float *inout, int rows, int cols) {
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (j >= cols || i >= rows) return;
-    t = inout[i * cols + j];
-    inout[i * cols + j] = 1 / (1 + expf(-x));
-}
-
-__global__ void sigmoid_grad(float *pre_grad, float *output, int rows, int cols) {
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (j >= cols || i >= rows) return;
-    t = output[i * cols + j];
-    pre_grad[i * cols + j] *= t * (1 - t);
-}
-
-__global__ void tanh(float *inout, int rows, int cols) {
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (j >= cols || i >= rows) return;
-    inout[i * cols + j] = tanhf(inout[i * cols + j]);
-}
-
-__global__ void tanh_grad(float *pre_grad, float *output, int rows, int cols) {
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (j >= cols || i >= rows) return;
-    t = output[i * cols + j];
-    pre_grad[i * cols + j] *= 1 - t * t;
-}
-
 __global__ void relu_grad(float *pre_grad, float *output, int rows, int cols) {
     int j = blockIdx.x * blockDim.x + threadIdx.x;
     int i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -52,6 +17,41 @@ __global__ void relu_grad(float *pre_grad, float *output, int rows, int cols) {
     if (j >= cols || i >= rows) return;
     if (output[i * cols + j] <= 0)
         pre_grad[i * cols + j] = 0;
+}
+
+__global__ void sigmoid(float *inout, float *bias, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    float t = inout[i * cols + j];
+    inout[i * cols + j] = 1 / (1 + expf(-t)) + bias[i];
+}
+
+__global__ void sigmoid_grad(float *pre_grad, float *output, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    float t = output[i * cols + j];
+    pre_grad[i * cols + j] *= t * (1 - t);
+}
+
+__global__ void tanh(float *inout, float *bias, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    inout[i * cols + j] = tanhf(inout[i * cols + j]) + bias[i];
+}
+
+__global__ void tanh_grad(float *pre_grad, float *output, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    float t = output[i * cols + j];
+    pre_grad[i * cols + j] *= 1 - t * t;
 }
 
 __global__ void bias_grad(float *pre_grad, float *output, int rows, int cols) {
@@ -91,6 +91,19 @@ void FullyConnect::feedforward() {
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((this->outputs->cols + blockDim.x - 1) / blockDim.x,
                  (this->outputs->rows + blockDim.y - 1) / blockDim.y);
+
+    switch (this->type) {
+        case FullyConnect::RELU: 
+            relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
+            break;
+        case FullyConnect::SIGMOID:
+            sigmoid << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
+            break;
+        case FullyConnect::TANH:
+            tanh << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
+            break;
+    }
+
     relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
 }
 
@@ -119,8 +132,19 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     dim3 blockDim_r(16, 16, 1);
     dim3 gridDim_r((outputs->cols + blockDim_r.x - 1) / blockDim_r.x,
                    (outputs->rows + blockDim_r.y - 1) / blockDim_r.y);
-    relu_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
-    printf("after relu\n");
+
+    switch (this->type) {
+        case FullyConnect::RELU: 
+            relu_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
+            break;
+        case FullyConnect::SIGMOID:
+            sigmoid_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
+            break;
+        case FullyConnect::TANH:
+            tanh_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
+            break;
+    }
+
     pre_grad->printHost();
     dim3 blockDim_b(256);
     dim3 gridDim_b((b->rows + blockDim_b.x - 1) / blockDim_b.x);

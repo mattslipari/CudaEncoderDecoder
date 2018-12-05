@@ -6,11 +6,19 @@
 class FullyConnect : public LayerBase {
 public:
 
-    FullyConnect(cuMatrix<float> *inputs, int units, float lambda) {
+    enum Activation
+    {
+      RELU,
+      SIGMOID,
+      TANH
+    };
+
+    FullyConnect(cuMatrix<float> *inputs, int units, float lambda, Activation type) {
         this->units = units;
         this->inputs = inputs;
         this->batch = inputs->cols;
         this->lambda = lambda;
+        this->type = type;
         this->outputs = new cuMatrix<float>(units, this->batch);
 
         this->inputs_grad = new cuMatrix<float>(inputs->rows, inputs->cols);
@@ -50,6 +58,7 @@ private:
     cuMatrix<float> *b; // units x 1
     int units;
 
+    Activation type; 
     float lambda;
     int batch;
 };
