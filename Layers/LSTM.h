@@ -5,7 +5,9 @@
 #include "LayerBase.h"
 
 class LSTM : public LayerBase {
-    void feedforward();
+
+
+    void forward();
 
     void backpropagation(cuMatrix<float> *pre_grad);
 

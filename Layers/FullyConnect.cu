@@ -81,7 +81,7 @@ void FullyConnect::initRandom() {
     }
 }
 
-void FullyConnect::feedforward() {
+void FullyConnect::forward() {
     this->w->toGpu();
     this->b->toGpu();
     this->inputs->toGpu();
