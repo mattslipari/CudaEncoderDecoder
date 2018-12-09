@@ -114,7 +114,7 @@ void FullyConnect::printParameter() {
     w_grad->printHost();
 }
 
-void FullyConnect::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> inputs) {
+void FullyConnect::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> *inputs) {
     dim3 blockDim_r(16, 16, 1);
     dim3 gridDim_r((outputs->cols + blockDim_r.x - 1) / blockDim_r.x,
                    (outputs->rows + blockDim_r.y - 1) / blockDim_r.y);

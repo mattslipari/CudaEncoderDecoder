@@ -21,4 +21,5 @@ int main() {
     input_list[0] = &inputs;
     LSTM ls(input_list, &pre_hidden, &pre_cell, 1, 3, 1.0);
     ls.forward();
+    ls.backpropagation(&pre_cell,input_list);
 }

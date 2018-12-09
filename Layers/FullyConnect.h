@@ -34,7 +34,7 @@ public:
 
     void forward(cuMatrix<float> *inputs);
 
-    void backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> inputs);
+    void backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> *inputs);
 
     cuMatrix<float> *getGrad();
 
@@ -44,7 +44,7 @@ public:
 
     void printParameter();
 
-    cuMatrix<float> *getWeightsGrad();
+    cuMatrix<float> *w_grad;
 
     cuMatrix<float> *outputs; // units x batch
     cuMatrix<float> *inputs_grad; // units x batch
@@ -52,7 +52,6 @@ public:
 
 private:
     cuMatrix<float> *inputs;
-    cuMatrix<float> *w_grad;
     cuMatrix<float> *b_grad;
 
     cuMatrix<float> *w; // units x input_row
@@ -64,5 +63,6 @@ private:
 };
 
 __global__ void tanh(float *inout, float *bias, int rows, int cols);
+__global__ void tanh_grad(float *pre_grad, float *output, int rows, int cols);
 
 #endif //CUDAENCODERDOCODER_FULLYCONNECT_H

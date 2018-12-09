@@ -8,7 +8,6 @@
 class LayerBase
 {
 public:
-    virtual void backpropagation(cuMatrix<float>* pre_grad,cuMatrix<float> inputs) = 0;
     virtual cuMatrix<float> *getGrad() = 0;
     virtual void updateWeight() = 0;
     virtual void printParameter() = 0;
