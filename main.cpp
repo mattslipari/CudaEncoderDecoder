@@ -1,4 +1,5 @@
 #include "Layers/FullyConnect.h"
+#include "Layers/LSTM.h"
 #include "Common/cuMatrix.h"
 
 int main() {
@@ -11,11 +12,13 @@ int main() {
     for (int i = 0; i < 12; i++) {
         grad[i] = i;
     }
-    cuMatrix<float> pre_grad(grad, 3, 4);
-    pre_grad.toGpu();
+
     cuMatrix<float> inputs(data, 2, 4);
-    FullyConnect fc(&inputs, 3, 0.01);
-    fc.forward();
-    fc.backpropagation(&pre_grad);
-    fc.printParameter();
+    cuMatrix<float> pre_hidden(grad, 3, 4);
+    cuMatrix<float> pre_cell(grad, 3, 4);
+    printf("Starting...\n");
+    cuMatrix<float> **input_list;
+    *input_list = &inputs;
+    printf("Past this stage\n");
+    LSTM ls(input_list, &pre_hidden, &pre_cell, 1, 3, 1.0);
 }

@@ -107,10 +107,6 @@ void FullyConnect::forward(cuMatrix<float> *inputs) {
     }
 }
 
-cuMatrix<float> *FullyConnect::getOutputs() {
-    return this->outputs;
-}
-
 void FullyConnect::printParameter() {
     printf("weights:\n");
     this->w->printHost();
