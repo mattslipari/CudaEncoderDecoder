@@ -62,29 +62,36 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) 
     cuMatrix<float> f_weights_grad(units, pre_hidden->rows + input_rows);
     cuMatrix<float> i_weights_grad(units, pre_hidden->rows + input_rows);
 
-    for (int t = std::min(input_total, MAXTIMESTEP); t >= 0; t++) {
+    for (int t = std::min(input_total, MAXTIMESTEP); t >= 0; t--) {
+        printf("iter: %d\n",t);
         cuMatrix<float> *input_t = inputs[t];
-        matrixConcat(input_t, this->pre_hidden, input_hidden);
+        matrixConcat(input_t, ht[t], input_hidden);
+        printf("concat\n");
         matrixElementWiseMul(pre_grad, tanh_ct[t], &o_grad);// ot gradient
+        printf("ot\n");
         o_layer->backpropagation(&o_grad,input_t);
         matrixSub(&o_weights_grad, o_layer->w_grad, &o_weights_grad, -1); //  weights addition
         tanh_grad << < blockDim_r, gridDim_r >> >
                                    (pre_grad->getDev(), tanh_ct[t]->getDev(), tanh_ct[t]->rows, tanh_ct[t]->cols);
+        printf("tanh grad\n");
         matrixElementWiseMul(pre_grad, ot[t], pre_grad);
         matrixSub(&c_grad, pre_grad, &c_grad, -1);// ct gradient
+        printf("ct\n");
         matrixElementWiseMul(&c_grad, at[t], &i_grad);// it gradient
         matrixElementWiseMul(&c_grad, it[t], &a_grad);//at gradient
+        printf("at\n");
         if (t - 1 < 0)
             matrixElementWiseMul(&c_grad, pre_cell, &f_grad);
         else
             matrixElementWiseMul(&c_grad, ct[t - 1], &f_grad);//ft gradient
+        printf("ft\n");
         i_layer->backpropagation(&i_grad, input_hidden);
         matrixSub(&i_weights_grad, i_layer->w_grad, &i_weights_grad, -1); //  weights addition
         f_layer->backpropagation(&f_grad, input_hidden);
         matrixSub(&f_weights_grad, f_layer->w_grad, &f_weights_grad, -1); //  weights addition
         a_layer->backpropagation(&a_grad, input_hidden);
         matrixSub(&a_weights_grad, a_layer->w_grad, &a_weights_grad, -1); //  weights addition
-
+        printf("get weights grad\n");
         pre_grad->cpuClear();
         pre_grad->gpuClear();
         matrixSplit(i_layer->inputs_grad, &x_grad, &ht_grad);
