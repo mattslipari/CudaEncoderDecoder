@@ -104,7 +104,6 @@ void FullyConnect::forward() {
             break;
     }
 
-    relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
 }
 
 cuMatrix<float> *FullyConnect::getOutputs() {

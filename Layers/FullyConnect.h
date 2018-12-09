@@ -6,11 +6,10 @@
 class FullyConnect : public LayerBase {
 public:
 
-    enum Activation
-    {
-      RELU,
-      SIGMOID,
-      TANH
+    enum Activation {
+        RELU,
+        SIGMOID,
+        TANH
     };
 
     FullyConnect(cuMatrix<float> *inputs, int units, float lambda, Activation type) {
@@ -34,7 +33,7 @@ public:
 
     }
 
-    void feedforward();
+    void forward();
 
     void backpropagation(cuMatrix<float> *pre_grad);
 
@@ -48,6 +47,8 @@ public:
 
     void printParameter();
 
+    cuMatrix<float> *getWeightsGrad();
+
 private:
     cuMatrix<float> *inputs;
     cuMatrix<float> *outputs; // units x batch
@@ -58,7 +59,7 @@ private:
     cuMatrix<float> *b; // units x 1
     int units;
 
-    Activation type; 
+    Activation type;
     float lambda;
     int batch;
 };
