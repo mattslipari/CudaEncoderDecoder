@@ -12,16 +12,15 @@ public:
         TANH
     };
 
-    FullyConnect(cuMatrix<float> *inputs, int units, float lambda, Activation type) {
+    FullyConnect(int input_rows, int input_cols, int units, float lambda, Activation type) {
         this->units = units;
-        this->inputs = inputs;
-        this->batch = inputs->cols;
+        this->batch = input_rows;
         this->lambda = lambda;
         this->type = type;
         this->outputs = new cuMatrix<float>(units, this->batch);
 
-        this->inputs_grad = new cuMatrix<float>(inputs->rows, inputs->cols);
-        this->w_grad = new cuMatrix<float>(units, inputs->rows);
+        this->inputs_grad = new cuMatrix<float>(input_rows, input_cols);
+        this->w_grad = new cuMatrix<float>(units, input_rows);
         this->b_grad = new cuMatrix<float>(units, 1);
 
         this->outputs->cpuClear();

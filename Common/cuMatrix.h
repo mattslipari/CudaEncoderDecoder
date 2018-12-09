@@ -213,6 +213,7 @@ void matrixConcat(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 /*y = x[1:row][:] z = x[row:end][:]*/
 void matrixSplit(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
+/**/
 void matrixElementWiseMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
 #endif
