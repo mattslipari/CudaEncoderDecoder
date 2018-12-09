@@ -11,10 +11,10 @@
 **November 10th** | Finish proposal, start writing Cuda code for a feed forward network | Completed |
 **November 17th** | Continue writing and testing initial implementation | Completed |
 **November 19th** | Project Milestone | Completed |
-**November 24th** | Continue writing and testing initial implementation|  In-progress |
-**November 28th** | Finish initial code |  |
-**December 1st**  | Start writing code for an RNN  |  |
-**December 5th** | Finish writing RNN code |  |
-**December 8th** | Write the Encoder-Decoder RNN and test |  |
+**November 24th** | Continue writing and testing initial implementation| Completed |
+**November 28th** | Finish initial code | Completed |
+**December 1st**  | Start writing code for an RNN  | Completed |
+**December 5th** | Finish writing RNN code | Completed |
+**December 8th** | Write the Encoder-Decoder RNN and test | In-progress |
 **December 12th** | Attempt our additional goals |  |
 **December 15th**  | Complete final version of code |  |
