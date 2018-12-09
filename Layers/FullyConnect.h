@@ -17,7 +17,7 @@ public:
         this->batch = input_rows;
         this->lambda = lambda;
         this->type = type;
-        this->outputs = new cuMatrix<float>(units, this->batch);
+        this->outputs = new cuMatrix<float>(units, input_cols);
 
         this->inputs_grad = new cuMatrix<float>(input_rows, input_cols);
         this->w_grad = new cuMatrix<float>(units, input_rows);

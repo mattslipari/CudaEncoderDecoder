@@ -9,38 +9,29 @@ public:
     LSTM(cuMatrix<float> **inputs, cuMatrix<float> *pre_hidden,
          cuMatrix<float> *pre_cell, int input_total, int units, float lambda) {
 
-        printf("Where is the segfault\n");
+      this->inputs = inputs;
+      this->pre_hidden = pre_hidden;
+      this->pre_cell = pre_cell;
+      this->input_total = input_total;
+      this->units = units;
+      this->lambda = lambda;
 
-        this->inputs = inputs;
-        this->pre_hidden = pre_hidden;
-        this->pre_cell = pre_cell;
-        this->input_total = input_total;
-        this->units = units;
-        this->lambda = lambda;
+      cuMatrix<float> *first_input = inputs[0];
+      this->input_rows = first_input->rows;
+      this->input_cols = first_input->cols;
 
-        printf("After setting\n");
+      int total_rows = pre_hidden->rows + this->input_rows;
 
-        cuMatrix<float> *first_input = inputs[0];
-        this->input_rows = first_input->rows;
-        this->input_cols = first_input->cols;
+      FullyConnect *a_layer =  new FullyConnect(total_rows, this->input_cols, units, lambda, FullyConnect::TANH);
+      FullyConnect *i_layer = new FullyConnect(total_rows, this->input_cols, units, lambda, FullyConnect::SIGMOID);
+      FullyConnect *f_layer = new FullyConnect(total_rows, this->input_cols, units, lambda, FullyConnect::SIGMOID);
+      FullyConnect *o_layer = new FullyConnect(total_rows, this->input_cols, units, lambda, FullyConnect::SIGMOID);
 
-        printf("Input size\n");
-
-        int total_rows = pre_hidden->rows + this->input_rows;
-        int total_cols = pre_hidden->cols + this->input_cols;
-
-        FullyConnect *a_layer = new FullyConnect(total_rows, total_cols, units, lambda, FullyConnect::TANH);
-        FullyConnect *i_layer = new FullyConnect(total_rows, total_cols, units, lambda, FullyConnect::SIGMOID);
-        FullyConnect *f_layer = new FullyConnect(total_rows, total_cols, units, lambda, FullyConnect::SIGMOID);
-        FullyConnect *o_layer = new FullyConnect(total_rows, total_cols, units, lambda, FullyConnect::SIGMOID);
-
-        printf("All layers done\n");
-
-        this->a_layer = a_layer;
-        this->i_layer = i_layer;
-        this->f_layer = f_layer;
-        this->o_layer = o_layer;
-    }
+      this->a_layer = a_layer;
+      this->i_layer = i_layer;
+      this->f_layer = f_layer;
+      this->o_layer = o_layer;
+		}
 
     ~LSTM() {
 

@@ -14,29 +14,24 @@ void LSTM::forward() {
     dim3 gridDim((cell_t->cols + blockDim.x - 1) / blockDim.x,
                  (cell_t->rows + blockDim.y - 1) / blockDim.y);
 
-    for (int t = 0; t < this->input_total; t++) {
-        printf("Loop front\n");
-        input_t = this->inputs[t];
-        matrixConcat(input_t, this->pre_hidden, input_hidden);
+	for (int t = 0; t < this->input_total; t++) {
+		input_t = this->inputs[t];
+		matrixConcat(input_t, this->pre_hidden, input_hidden);
 
-        printf("After input+hidden concat\n");
+		this->a_layer->forward(input_hidden);
+		this->i_layer->forward(input_hidden);
+		this->f_layer->forward(input_hidden);
+		this->o_layer->forward(input_hidden);
 
-        this->a_layer->forward(input_hidden);
-        this->i_layer->forward(input_hidden);
-        this->f_layer->forward(input_hidden);
-        this->o_layer->forward(input_hidden);
-
-        printf("After Feed Forward\n");
-
-        matrixElementWiseMul(this->i_layer->outputs, this->a_layer->outputs, ia);
+		matrixElementWiseMul(this->i_layer->outputs, this->a_layer->outputs, ia);
         matrixElementWiseMul(this->f_layer->outputs, this->pre_cell, fc);
-        matrixSub(ia, fc, cell_t, -1);
+		matrixSub(ia, fc, cell_t, -1);
 
-        printf("After Mul Sub\n");
-
-        tanh << < blockDim, gridDim >> > (cell_t->getDev(), blank_bias->getDev(), cell_t->rows, cell_t->cols);
+        tanh <<< blockDim, gridDim >>> (cell_t->getDev(), blank_bias->getDev(), cell_t->rows, cell_t->cols);
         matrixElementWiseMul(this->o_layer->outputs, cell_t, this->pre_hidden);
-    }
+	}
+
+    this->pre_hidden->printHost();
 }
 
 void LSTM::backpropagation(cuMatrix<float> *pre_grad) {
@@ -71,12 +66,11 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad) {
         a_layer->backpropagation(a_grad);
         matrixSub(a_weights_grad, a_layer->getWeightsGrad(), -1); //  weights addition
         matrixSub(c_grad, pre_grad,)
-
-        matrixElementWiseMul(pre_grad, ft, c_grad);
     }
-    cuMatrix<float> *LSTM::getGrad() {
-        return this->pre_hidden;
-    }
+}
+cuMatrix<float> *LSTM::getGrad() {
+    return this->pre_hidden;
+}
 
     void LSTM::updateWeight() {
 
