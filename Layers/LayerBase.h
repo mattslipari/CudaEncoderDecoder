@@ -8,14 +8,9 @@
 class LayerBase
 {
 public:
-    virtual void forward() = 0;
     virtual void backpropagation(cuMatrix<float>* pre_grad) = 0;
     virtual cuMatrix<float> *getGrad() = 0;
     virtual void updateWeight() = 0;
-
-
-    virtual cuMatrix<float>* getOutputs() = 0;
-
     virtual void printParameter() = 0;
 
     std::string m_name;

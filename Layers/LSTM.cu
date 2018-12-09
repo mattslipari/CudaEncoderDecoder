@@ -1,36 +1,44 @@
+#include "FullyConnect.h"
 #include "LSTM.h"
-#include "cuMatrix.h"
+#include "../Common/cuMatrix.h"
 
 void LSTM::forward() {
-    cuMatrix<float> *input_t;
-    cuMatrix<float> *input_hidden = new cuMatrix<float>(pre_hidden->rows + this->input_rows, this->input_cols);
-    cuMatrix<float> *cell_t = new cuMatrix<float>(this->units, this->input_rows);
-    cuMatrix<float> *ia = new cuMatrix<float>(this->units, this->input_rows);
-    cuMatrix<float> *fc = new cuMatrix<float>(this->units, this->input_rows);
-    cuMatrix<float> *blank_bias = new cuMatrix<float>(cell_t->rows, 1);
+	cuMatrix<float> *input_t;
+	cuMatrix<float> *input_hidden =
+		new cuMatrix<float>(pre_hidden->rows + this->input_rows, this->input_cols);
+	cuMatrix<float> *cell_t = new cuMatrix<float>(this->units, this->input_cols);
+	cuMatrix<float> *ia = new cuMatrix<float>(this->units, this->input_cols);
+	cuMatrix<float> *fc = new cuMatrix<float>(this->units, this->input_cols);
+	cuMatrix<float> *blank_bias = new cuMatrix<float>(cell_t->cols, 1);
 
-    dim3 blockDim(16, 16, 1);
-    dim3 gridDim((this->cell_t->cols + blockDim.x - 1) / blockDim.x,
-                 (this->cell_t->rows + blockDim.y - 1) / blockDim.y);
+	dim3 blockDim(16, 16, 1);
+    dim3 gridDim((cell_t->cols + blockDim.x - 1) / blockDim.x,
+                 (cell_t->rows + blockDim.y - 1) / blockDim.y);
 
-    for (int t = 0; t < this->input_total; t++) {
-        input_t = this->inputs[t];
-        matrixConcat(input_t, this->pre_hidden, input_hidden);
+	for (int t = 0; t < this->input_total; t++) {
+        printf("Loop front\n");
+		input_t = this->inputs[t];
+		matrixConcat(input_t, this->pre_hidden, input_hidden);
 
-        this->a_layer->feedForward(input_hidden);
-        this->i_layer->feedForward(input_hidden);
-        this->f_layer->feedForward(input_hidden);
-        this->o_layer->feedForward(input_hidden);
+        printf("After input+hidden concat\n");
 
-        matrixElementwiseMul(i_layer->outputs, a_layer->outputs, ia);
-        matrixElementwiseMul(f_layer->outputs, this->pre_cell, fc);
-        matrixSub(ia, fc, cell_t, -1);
+		this->a_layer->forward(input_hidden);
+		this->i_layer->forward(input_hidden);
+		this->f_layer->forward(input_hidden);
+		this->o_layer->forward(input_hidden);
 
-        tanh << < blockDim, gridDim >> > (cell_t->getDev(), blank_bias, cell_t->rows, cell_t->cols);
-        matrixElementwiseMul(o_layer->outputs, cell_t, this->pre_hidden);
-    }
+        printf("After Feed Forward\n");
+
+		matrixElementWiseMul(this->i_layer->outputs, this->a_layer->outputs, ia);
+		matrixElementWiseMul(this->f_layer->outputs, this->pre_cell, fc);
+		matrixSub(ia, fc, cell_t, -1);
+
+        printf("After Mul Sub\n");
+
+        tanh <<< blockDim, gridDim >>> (cell_t->getDev(), blank_bias->getDev(), cell_t->rows, cell_t->cols);
+        matrixElementWiseMul(this->o_layer->outputs, cell_t, this->pre_hidden);
+	}
 }
-
 void LSTM::backpropagation(cuMatrix<float> *pre_grad) {
     dim3 blockDim_r(16, 16, 1);
     dim3 gridDim_r((ct->cols + blockDim_r.x - 1) / blockDim_r.x,
@@ -66,4 +74,14 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad) {
 
         matrixElementWiseMul(pre_grad, ft, c_grad);
     }
+cuMatrix<float> *LSTM::getGrad() {
+    return this->pre_hidden;
+}
+
+void LSTM::updateWeight() {
+
+}
+
+void LSTM::printParameter() {
+
 }
