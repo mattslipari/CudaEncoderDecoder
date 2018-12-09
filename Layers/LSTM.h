@@ -58,7 +58,7 @@ private:
   	cuMatrix<float> *pre_hidden;
   	cuMatrix<float> *pre_cell;
   
-  	FullyConnect* a_layer;
+  	FullyConnect* a_layer; //(
   	FullyConnect* i_layer;
   	FullyConnect* f_layer;
   	FullyConnect* o_layer;

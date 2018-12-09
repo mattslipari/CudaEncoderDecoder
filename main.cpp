@@ -1,5 +1,7 @@
 #include "Layers/FullyConnect.h"
+#include "Layers/LSTM.h"
 #include "Common/cuMatrix.h"
+
 
 int main() {
     float data[8];
@@ -18,4 +20,5 @@ int main() {
     fc.forward();
     fc.backpropagation(&pre_grad);
     fc.printParameter();
+
 }

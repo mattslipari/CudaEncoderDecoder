@@ -48,6 +48,8 @@ public:
 
     cuMatrix<float> *getWeightsGrad();
 
+    int units;
+
 private:
     cuMatrix<float> *inputs;
     cuMatrix<float> *outputs; // units x batch
@@ -56,7 +58,6 @@ private:
     cuMatrix<float> *inputs_grad; // units x batch
     cuMatrix<float> *w; // units x input_row
     cuMatrix<float> *b; // units x 1
-    int units;
 
     Activation type;
     float lambda;
