@@ -64,21 +64,11 @@ __global__ void bias_grad(float *pre_grad, float *output, int rows, int cols) {
 }
 
 void FullyConnect::initRandom() {
-    this->w = new cuMatrix<float>(this->units, this->inputs->rows);
+    this->w = new cuMatrix<float>(this->units, this->batch);
     this->b = new cuMatrix<float>(this->units, 1);
 
-    // this->w->setAllRandom(-1, 1);
-    // this->b->setAllRandom(-1, 1);
-
-    for (int j = 0; j < this->inputs->rows; j++) {
-        for (int i = 0; i < this->units; i++) {
-            this->w->set(i, j, j + 1);
-        }
-    }
-
-    for (int i = 0; i < this->units; i++) {
-        this->b->set(i, 0, i);
-    }
+    this->w->setAllRandom(-1, 1);
+    this->b->setAllRandom(-1, 1);
 }
 
 void FullyConnect::forward(cuMatrix<float> *inputs) {

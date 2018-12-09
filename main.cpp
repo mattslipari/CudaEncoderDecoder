@@ -16,9 +16,9 @@ int main() {
     cuMatrix<float> inputs(data, 2, 4);
     cuMatrix<float> pre_hidden(grad, 3, 4);
     cuMatrix<float> pre_cell(grad, 3, 4);
-    printf("Starting...\n");
-    cuMatrix<float> **input_list;
-    *input_list = &inputs;
-    printf("Past this stage\n");
+
+    cuMatrix<float> *input_list[1];
+    input_list[0] = &inputs;
     LSTM ls(input_list, &pre_hidden, &pre_cell, 1, 3, 1.0);
+    ls.forward();
 }

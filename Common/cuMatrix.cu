@@ -27,7 +27,7 @@ __global__ void elementwiseMul(float *x, float *y, float *z, int rows, int cols)
 }
 
 void matrixElementWiseMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
-    if (x->cols != y->cols || z->cols != x->cols || z->rows != x->rows + y->rows) {
+    if (x->cols != y->cols || z->cols != x->cols || x->rows != y->rows || x->rows != z->rows) {
         printf("matrix elementwise multiply invalid dim\n");
         exit(0);
     }
