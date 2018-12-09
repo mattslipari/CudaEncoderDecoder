@@ -39,7 +39,7 @@ public:
 
     void forward();
 
-    void backpropagation(cuMatrix<float> *pre_grad);
+    void backpropagation(cuMatrix<float> *pre_grad,cuMatrix<float> inputs);
 
     cuMatrix<float> *getGrad();
 
@@ -58,6 +58,9 @@ private:
     cuMatrix<float> ft[MAXTIMESTEP];
     cuMatrix<float> ot[MAXTIMESTEP];
     cuMatrix<float> ct[MAXTIMESTEP];
+    cuMatrix<float> ht[MAXTIMESTEP];
+    cuMatrix<float> tanh_ct[MAXTIMESTEP];
+
 
     FullyConnect *a_layer;
     FullyConnect *i_layer;

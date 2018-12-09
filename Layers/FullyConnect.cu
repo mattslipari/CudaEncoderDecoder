@@ -85,14 +85,14 @@ void FullyConnect::forward(cuMatrix<float> *inputs) {
                  (this->outputs->rows + blockDim.y - 1) / blockDim.y);
 
     switch (this->type) {
-        case FullyConnect::RELU: 
-            relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
+        case FullyConnect::RELU:
+            relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
             break;
         case FullyConnect::SIGMOID:
-            sigmoid << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
+            sigmoid << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
             break;
         case FullyConnect::TANH:
-            tanh << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
+            tanh << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
             break;
     }
 }
@@ -114,13 +114,13 @@ void FullyConnect::printParameter() {
     w_grad->printHost();
 }
 
-void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
+void FullyConnect::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> inputs) {
     dim3 blockDim_r(16, 16, 1);
     dim3 gridDim_r((outputs->cols + blockDim_r.x - 1) / blockDim_r.x,
                    (outputs->rows + blockDim_r.y - 1) / blockDim_r.y);
 
     switch (this->type) {
-        case FullyConnect::RELU: 
+        case FullyConnect::RELU:
             relu_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
             break;
         case FullyConnect::SIGMOID:
@@ -139,7 +139,6 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad) {
     matrixMulTA(pre_grad, w, inputs_grad);
     matrixTranspose(inputs_grad);
     matrixMulTB(pre_grad, inputs, w_grad);
-    updateWeight();
 }
 
 cuMatrix<float> *FullyConnect::getGrad() {

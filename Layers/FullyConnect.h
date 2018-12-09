@@ -34,7 +34,7 @@ public:
 
     void forward(cuMatrix<float> *inputs);
 
-    void backpropagation(cuMatrix<float> *pre_grad);
+    void backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> inputs);
 
     cuMatrix<float> *getGrad();
 
@@ -47,14 +47,14 @@ public:
     cuMatrix<float> *getWeightsGrad();
 
     cuMatrix<float> *outputs; // units x batch
-
+    cuMatrix<float> *inputs_grad; // units x batch
     int units;
 
 private:
     cuMatrix<float> *inputs;
     cuMatrix<float> *w_grad;
     cuMatrix<float> *b_grad;
-    cuMatrix<float> *inputs_grad; // units x batch
+
     cuMatrix<float> *w; // units x input_row
     cuMatrix<float> *b; // units x 1
 
