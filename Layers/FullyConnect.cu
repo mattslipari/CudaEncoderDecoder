@@ -81,7 +81,9 @@ void FullyConnect::initRandom() {
     }
 }
 
-void FullyConnect::forward() {
+void FullyConnect::feedforward(cuMatrix<float> *inputs) {
+    this->inputs = inputs;
+
     this->w->toGpu();
     this->b->toGpu();
     this->inputs->toGpu();
@@ -103,8 +105,6 @@ void FullyConnect::forward() {
             tanh << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);            
             break;
     }
-
-    relu << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
 }
 
 cuMatrix<float> *FullyConnect::getOutputs() {
