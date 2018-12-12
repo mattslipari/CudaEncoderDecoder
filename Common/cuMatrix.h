@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #ifndef _CU_MATRIX_H_
 #define _CU_MATRIX_H_
 

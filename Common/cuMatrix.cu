@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #include "cuMatrix.h"
 #include <stdio.h>
 #include <stdlib.h>

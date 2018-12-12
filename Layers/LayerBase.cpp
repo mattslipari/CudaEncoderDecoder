@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #include "LayerBase.h"
 
 LayerBase* Layers::get(std::string name)
