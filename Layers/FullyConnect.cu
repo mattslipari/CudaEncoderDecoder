@@ -131,7 +131,7 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> *i
             break;
     }
 
-    pre_grad->printHost();
+    //pre_grad->printHost();
     dim3 blockDim_b(256);
     dim3 gridDim_b((b->rows + blockDim_b.x - 1) / blockDim_b.x);
     bias_grad << < blockDim_b, gridDim_b >> > (pre_grad->getDev(), b_grad->getDev(), pre_grad->rows, pre_grad->cols);

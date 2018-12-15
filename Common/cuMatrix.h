@@ -89,6 +89,17 @@ public:
         }
     }
 
+    void copyFromGpu(T *copyData) {
+        cudaError_t cudaStat;
+        mallocDev();
+        cudaStat = cudaMemcpy(devData, copyData, sizeof(*copyData) * cols * rows, cudaMemcpyDeviceToDevice);
+        if (cudaStat != cudaSuccess) {
+            printf("cuMatrix::copyFromGpu data upload failed\n");
+            MemoryMonitor::instance()->freeGpuMemory(devData);
+            exit(0);
+        }
+    }
+
     void cpuClear() {
         mallocHost();
         memset(hostData, 0, cols * rows * sizeof(*hostData));
