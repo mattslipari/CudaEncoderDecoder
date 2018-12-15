@@ -3,22 +3,43 @@
 #include "../Common/cuMatrix.h"
 #include <algorithm>
 
-void LSTM::forward() {
+__global__ void attentionKernel(float *x, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (j >= cols) return;
+    float sum = 0;
+    for (int k = 0; k < rows; k++) {
+        sum += x[k * cols + j];
+    }
+    for (int k = 0; k < rows; k++) {
+        x[k * cols + j] *= sum;
+    }
+}
+
+void LSTM::forward(cuMatrix<float> **encoder_hidden) {
     cuMatrix<float> *input_t;
-    cuMatrix<float> *input_hidden = new cuMatrix<float>(pre_hidden->rows + this->input_rows, this->input_cols);
+    cuMatrix<float> *input_hidden = new cuMatrix<float>(total_rows, this->input_cols);
     cuMatrix<float> *cell_t = this->pre_cell;
     cuMatrix<float> *ia = new cuMatrix<float>(this->units, this->input_cols);
     cuMatrix<float> *fc = new cuMatrix<float>(this->units, this->input_cols);
     cuMatrix<float> *blank_bias = new cuMatrix<float>(cell_t->cols, 1);
+    cuMatrix<float> *concat_tmp = new cuMatrix<float>(pre_hidden->rows + this->input_rows, this->input_cols);
 
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((cell_t->cols + blockDim.x - 1) / blockDim.x,
                  (cell_t->rows + blockDim.y - 1) / blockDim.y);
-
+    //printf("attention: %d\n",useAttention);
 
     for (int t = 0; t < std::min(this->input_total, MAXTIMESTEP); t++) {
         input_t = this->inputs[t];
-        matrixConcat(input_t, this->pre_hidden, input_hidden);
+        if (useAttention) {
+            //printf("here\n");
+            matrixConcat(input_t, this->pre_hidden, concat_tmp);
+            //printf("done\n");
+            cuMatrix<float> *ct = attention(encoder_hidden);
+            matrixConcat(concat_tmp, ct, input_hidden);
+        } else
+            matrixConcat(input_t, this->pre_hidden, input_hidden);
 
         this->a_layer->forward(input_hidden);
         this->i_layer->forward(input_hidden);
@@ -50,11 +71,24 @@ void LSTM::forward() {
     // this->pre_hidden->printHost();
 }
 
+cuMatrix<float> *LSTM::attention(cuMatrix<float> **encoder_hidden) {
+    dim3 blockDim(256);
+    dim3 gridDim((pre_hidden->cols + blockDim.x - 1) / blockDim.x);
+    cuMatrix<float> *ct = new cuMatrix<float>(pre_hidden->rows, pre_hidden->cols);
+    cuMatrix<float> tmpt(pre_hidden->rows, pre_hidden->cols);
+    for (int t = 0; t < std::min(input_total, MAXTIMESTEP); t++) {
+        matrixElementWiseMul(encoder_hidden[t], pre_hidden, &tmpt);
+        attentionKernel << < blockDim, gridDim >> > (tmpt.getDev(), tmpt.rows, tmpt.cols);
+        matrixSub(ct, &tmpt, ct, -1);//addition
+    }
+    return ct;
+}
+
 void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) {
     dim3 blockDim_r(16, 16, 1);
     dim3 gridDim_r((pre_cell->cols + blockDim_r.x - 1) / blockDim_r.x,
                    (pre_cell->rows + blockDim_r.y - 1) / blockDim_r.y);
-    cuMatrix<float> *input_hidden = new cuMatrix<float>(pre_hidden->rows + this->input_rows, this->input_cols);
+    cuMatrix<float> *input_hidden = new cuMatrix<float>(total_rows, this->input_cols);
     cuMatrix<float> x_grad(input_rows, input_cols);
     cuMatrix<float> ht_grad(units, input_cols);
 
@@ -82,19 +116,19 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) 
         matrixSub(&c_grad, pre_grad, &c_grad, -1);// ct gradient
         matrixElementWiseMul(&c_grad, at[t], &i_grad);// it gradient
         matrixElementWiseMul(&c_grad, it[t], &a_grad);//at gradient
-        
+
         if (t - 1 < 0)
             matrixElementWiseMul(&c_grad, pre_cell, &f_grad);
         else
             matrixElementWiseMul(&c_grad, ct[t - 1], &f_grad);//ft gradient
-        
+
         i_layer->backpropagation(&i_grad, input_hidden);
         matrixSub(&i_weights_grad, i_layer->w_grad, &i_weights_grad, -1); //  weights addition
         f_layer->backpropagation(&f_grad, input_hidden);
         matrixSub(&f_weights_grad, f_layer->w_grad, &f_weights_grad, -1); //  weights addition
         a_layer->backpropagation(&a_grad, input_hidden);
         matrixSub(&a_weights_grad, a_layer->w_grad, &a_weights_grad, -1); //  weights addition
-        
+
         pre_grad->cpuClear();
         pre_grad->gpuClear();
 

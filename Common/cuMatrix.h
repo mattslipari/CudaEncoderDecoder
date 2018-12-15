@@ -209,7 +209,9 @@ private:
 
 /*matrix multiply*/
 /*z = x * y*/
-void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
+double matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
+
+double matrixMul2(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
 /*z = T(x) * y*/
 void matrixMulTA(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
@@ -218,10 +220,13 @@ void matrixMulTA(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 void matrixMulTB(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);
 
 /*x = T(x)*/
-void matrixTranspose(cuMatrix<float> *x);
+double matrixTranspose(cuMatrix<float> *x);
+
+double matrixTranspose2(cuMatrix<float> *x);
 
 /*z = x - (lambda * y)*/
-void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda);
+double matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda);
+double matrixSub2(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda);
 
 /*z = [x;y]*/
 void matrixConcat(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z);

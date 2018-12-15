@@ -8,6 +8,7 @@ https://github.com/zhxfl/CUDA-CNN
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
+#include "CycleTimer.h"
 
 
 cublasHandle_t &getHandle() {
@@ -39,7 +40,7 @@ void matrixElementWiseMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((x->cols + blockDim.x - 1) / blockDim.x,
                  (x->rows + blockDim.y - 1) / blockDim.y);
-    elementwiseMul <<< blockDim, gridDim >>> (x->getDev(), y->getDev(), z->getDev(), x->rows, x->cols);
+    elementwiseMul << < blockDim, gridDim >> > (x->getDev(), y->getDev(), z->getDev(), x->rows, x->cols);
 
 }
 
@@ -71,14 +72,17 @@ void matrixSplit(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
 
 /*matrix transpose*/
 /*x = T(x)*/
-void matrixTranspose(cuMatrix<float> *x) {
+double matrixTranspose(cuMatrix<float> *x) {
     float alpha = 1.0;
     float beta = 0.0;
     float *y;
+    cublasHandle_t handle = getHandle();
+    double overallStartTime = CycleTimer::currentSeconds();
     cudaMalloc(&y, x->rows * x->cols * sizeof(float));
     cudaMemcpy(y, x->getDev(), x->rows * x->cols * sizeof(float), cudaMemcpyDeviceToDevice);
 
-    cublasSgeam(getHandle(),
+
+    cublasSgeam(handle,
                 CUBLAS_OP_T,
                 CUBLAS_OP_N,
                 x->rows, x->cols,
@@ -92,13 +96,65 @@ void matrixTranspose(cuMatrix<float> *x) {
     x->rows = x->cols;
     x->cols = temp_r;
     cudaFree(y);
+    double overallEndTime = CycleTimer::currentSeconds();
+    return overallEndTime - overallStartTime;
 }
 
-void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda) {
+__global__ void matrixTransKernel(float *A, int rows, int cols) {
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (j >= cols || i >= rows) return;
+    float tmp = A[i * cols + j];
+    A[i * cols + j] = A[j * cols + i];
+    A[j * cols + i] = tmp;
+}
+
+double matrixTranspose2(cuMatrix<float> *x) {
+    double overallStartTime = CycleTimer::currentSeconds();
+    dim3 blockDim(16, 16);
+    dim3 gridDim((x->cols + blockDim.x - 1) / blockDim.x,
+                 (x->rows + blockDim.y - 1) / blockDim.y);
+
+    matrixTransKernel << < blockDim, gridDim >> > (x->getDev(), x->rows,x->cols);
+    cudaThreadSynchronize();
+    int temp_r = x->rows;
+    x->rows = x->cols;
+    x->cols = temp_r;
+    double overallEndTime = CycleTimer::currentSeconds();
+    return overallEndTime - overallStartTime;
+}
+
+__global__ void matrixSubKernel(float *A, float *B, float *C, float lambda, int N) {
+    int ROW = blockIdx.y * blockDim.y + threadIdx.y;
+    int COL = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (ROW < N && COL < N) {
+        C[ROW * N + COL] = A[ROW * N + COL] + lambda * B[ROW * N + COL];
+    }
+}
+
+double matrixSub2(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda) {
+    double overallStartTime = CycleTimer::currentSeconds();
+    lambda = -lambda;
+    dim3 blockDim(16, 16);
+    int N = x->rows;
+    dim3 gridDim((N + blockDim.x - 1) / blockDim.x,
+                 (N + blockDim.y - 1) / blockDim.y);
+
+    matrixSubKernel << < blockDim, gridDim >> > (x->getDev(), y->getDev(), z->getDev(), lambda, N);
+    cudaThreadSynchronize();
+    double overallEndTime = CycleTimer::currentSeconds();
+    return overallEndTime - overallStartTime;
+}
+
+double matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float lambda) {
     lambda = -lambda;
     float alpha = 1.0;
     cublasStatus_t stat;
-    stat = cublasSgeam(getHandle(),
+    cublasHandle_t handle = getHandle();
+    double overallStartTime = CycleTimer::currentSeconds();
+    stat = cublasSgeam(handle,
                        CUBLAS_OP_N,
                        CUBLAS_OP_N,
                        x->cols, y->rows,
@@ -107,20 +163,22 @@ void matrixSub(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z, float
                        &lambda,
                        y->getDev(), y->cols,
                        z->getDev(), z->cols);
-    cudaStreamSynchronize(0);
-    getLastCudaError("matrixSub");
-    if (stat != CUBLAS_STATUS_SUCCESS) {
-        printf("matrixSub cublasSgemm error\n");
-        cudaFree(x->getDev());
-        cudaFree(y->getDev());
-        cudaFree(z->getDev());
-        exit(0);
-    }
+    double overallEndTime = CycleTimer::currentSeconds();
+    return overallEndTime - overallStartTime;
+    //cudaStreamSynchronize(0);
+//    getLastCudaError("matrixSub");
+//    if (stat != CUBLAS_STATUS_SUCCESS) {
+//        printf("matrixSub cublasSgemm error\n");
+//        cudaFree(x->getDev());
+//        cudaFree(y->getDev());
+//        cudaFree(z->getDev());
+//        exit(0);
+//    }
 }
 
 /*matrix multiply*/
 /*z = x * y*/
-void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+double matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
     if (x->cols != y->rows || z->rows != x->rows || z->cols != y->cols) {
         printf("matrix mul chanels != 1\n");
         exit(0);
@@ -128,8 +186,10 @@ void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
     float alpha = 1.0;
     float beta = 0.0;
     cublasStatus_t stat;
+    cublasHandle_t handle = getHandle();
+    double overallStartTime = CycleTimer::currentSeconds();
     stat = cublasSgemm(
-            getHandle(),
+            handle,
             CUBLAS_OP_N,
             CUBLAS_OP_N,
             y->cols,
@@ -143,16 +203,49 @@ void matrixMul(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
             &beta,
             z->getDev(),
             z->cols);
-    cudaStreamSynchronize(0);
-    getLastCudaError("matrixMul");
-    if (stat != CUBLAS_STATUS_SUCCESS) {
-        printf("matrixMul cublasSgemm error\n");
-        cudaFree(x->getDev());
-        cudaFree(y->getDev());
-        cudaFree(z->getDev());
-        exit(0);
-    }
+    double overallEndTime = CycleTimer::currentSeconds();
+    return overallEndTime - overallStartTime;
+    //cudaStreamSynchronize(0);
+    //getLastCudaError("matrixMul");
+//    if (stat != CUBLAS_STATUS_SUCCESS) {
+//        printf("matrixMul cublasSgemm error\n");
+//        cudaFree(x->getDev());
+//        cudaFree(y->getDev());
+//        cudaFree(z->getDev());
+//        exit(0);
+//    }
 }
+
+__global__ void matrixMultiplicationKernel(float *A, float *B, float *C, int N) {
+
+    int ROW = blockIdx.y * blockDim.y + threadIdx.y;
+    int COL = blockIdx.x * blockDim.x + threadIdx.x;
+
+    float tmpSum = 0;
+
+    if (ROW < N && COL < N) {
+        // each thread computes one element of the block sub-matrix
+        for (int i = 0; i < N; i++) {
+            tmpSum += A[ROW * N + i] * B[i * N + COL];
+        }
+    }
+    C[ROW * N + COL] = tmpSum;
+}
+
+double matrixMul2(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
+    double overallStartTime = CycleTimer::currentSeconds();
+    int N = x->rows;
+    //printf("%d\n", N);
+    dim3 blockDim(16, 16);
+    dim3 gridDim((N + blockDim.x - 1) / blockDim.x,
+                 (N + blockDim.y - 1) / blockDim.y);
+
+    matrixMultiplicationKernel << < blockDim, gridDim >> > (x->getDev(), y->getDev(), z->getDev(), N);
+    cudaThreadSynchronize();
+    double overallEndTime = CycleTimer::currentSeconds();
+    return overallEndTime - overallStartTime;
+}
+
 
 /*z = T(x) * y*/
 void matrixMulTA(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {

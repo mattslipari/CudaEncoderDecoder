@@ -1,21 +1,28 @@
 #include "Layers/FullyConnect.h"
 #include "Layers/LSTM.h"
+#include "Layers/EncoderDecoder.h"
 #include "Common/cuMatrix.h"
 #include "Common/CycleTimer.h"
 
 int main() {
 
-    int total_runs = 5;
+    int total_runs = 1;
 
-    int total_inputs = 200;    
+    int total_inputs = 200;
     int units = 100;
     float lambda = 1.0;
     int input_cols = 1000;
     int input_rows = 200; //real batch is: input_batch + units
 
-    double totalRuntime;
+    double totalRuntime = 0.0;
     double forwardRuntime;
     double backRuntime;
+//    cuMatrix<float> x(5000, 5000);
+//    cuMatrix<float> y(5000, 5000);
+//    cuMatrix<float> z(5000, 5000);
+
+//    x.setAllRandom(-10, 10);
+//    y.setAllRandom(-10, 10);
     for (int i = 0; i < total_runs; i++) {
 
         cuMatrix<float> pre_hidden(units, input_cols); //same # of cols as inputs
@@ -31,28 +38,27 @@ int main() {
         }
 
         //Start our computation
+
         double overallStartTime = CycleTimer::currentSeconds();
 
-        LSTM ls(input_list, &pre_hidden, &pre_cell, total_inputs, units, lambda);
+        EncoderDecoder encoderDecoder(input_list, &pre_hidden, &pre_cell, total_inputs, units, lambda);
 
         double forwardStartTime = CycleTimer::currentSeconds();
 
-        ls.forward();
+        encoderDecoder.forward();
 
         double forwardEndTime = CycleTimer::currentSeconds();
         double backStartTime = CycleTimer::currentSeconds();
 
-        ls.backpropagation(&pre_cell,input_list);
-
-        double overallEndTime = CycleTimer::currentSeconds(); 
-
-        totalRuntime += overallEndTime - overallStartTime;
+        //ls.backpropagation(&pre_cell,input_list);
+        double overallEndTime = CycleTimer::currentSeconds();
         forwardRuntime += forwardEndTime - forwardStartTime;
         backRuntime += overallEndTime - backStartTime;
+        totalRuntime+=overallEndTime-overallStartTime;
     }
 
 
-    printf("Forward Time Elapsed: %.3f s\n", forwardRuntime/total_runs);
-    printf("Backpropagation Time Elapsed: %.3f s\n", backRuntime/total_runs);
-    printf("Overall Time Elapsed: %.3f s\n", totalRuntime/total_runs);
+    printf("Forward Time Elapsed: %.3f s\n", forwardRuntime / total_runs);
+//    printf("Backpropagation Time Elapsed: %.3f s\n", backRuntime/total_runs);
+    printf("Overall Time Elapsed: %.3f ms\n", totalRuntime/total_runs);
 }
