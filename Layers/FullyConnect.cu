@@ -100,6 +100,7 @@ void FullyConnect::forward(cuMatrix<float> *inputs) {
             tanh << < blockDim, gridDim >> > (outputs->getDev(), this->b->getDev(), this->units, this->batch);
             break;
     }
+    cudaThreadSynchronize();
 }
 
 void FullyConnect::printParameter() {
@@ -135,6 +136,7 @@ void FullyConnect::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> *i
             tanh_grad << < blockDim_r, gridDim_r >> > (pre_grad->getDev(), outputs->getDev(), outputs->rows, outputs->cols);
             break;
     }
+    cudaThreadSynchronize();
 
     dim3 blockDim_b(256);
     dim3 gridDim_b((b->rows + blockDim_b.x - 1) / blockDim_b.x);

@@ -1,7 +1,7 @@
 #ifndef CUDAENCODERDOCODER_LSTM_H
 #define CUDAENCODERDOCODER_LSTM_H
 
-#define MAXTIMESTEP 50
+#define MAXTIMESTEP 5000
 
 #include "LayerBase.h"
 #include "FullyConnect.h"

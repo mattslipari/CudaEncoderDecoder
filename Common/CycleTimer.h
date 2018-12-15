@@ -72,6 +72,10 @@
       return currentTicks() * secondsPerTick();
     }
 
+    static double currentMs() {
+      return currentTicks() * msPerTick();
+    }
+
     //////////
     // Return the conversion from seconds to ticks.
     static double ticksPerSecond() {

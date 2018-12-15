@@ -40,6 +40,8 @@ void LSTM::forward() {
         ct[t] = new cuMatrix<float>(cell_t->rows, cell_t->cols);
         ct[t]->copyFromGpu(cell_t->getDev());
         tanh << < blockDim, gridDim >> > (cell_t->getDev(), blank_bias->getDev(), cell_t->rows, cell_t->cols);
+        cudaThreadSynchronize();
+
         tanh_ct[t] = new cuMatrix<float>(cell_t->rows, cell_t->cols);
         tanh_ct[t]->copyFromGpu(cell_t->getDev());
         matrixElementWiseMul(this->o_layer->outputs, cell_t, this->pre_hidden);
@@ -67,7 +69,6 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) 
     cuMatrix<float> i_weights_grad(units, pre_hidden->rows + input_rows);
 
     for (int t = std::min(input_total, MAXTIMESTEP) - 1; t >= 0; t--) {
-        printf("iter: %d\n", t);
         cuMatrix<float> *input_t = inputs[t];
         matrixConcat(input_t, ht[t], input_hidden);
         matrixElementWiseMul(pre_grad, tanh_ct[t], &o_grad);// ot gradient
@@ -75,7 +76,8 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) 
         matrixSub(&o_weights_grad, o_layer->w_grad, &o_weights_grad, -1); //  weights addition
         tanh_grad << < blockDim_r, gridDim_r >> >
                                    (pre_grad->getDev(), tanh_ct[t]->getDev(), tanh_ct[t]->rows, tanh_ct[t]->cols);
-        
+        cudaThreadSynchronize();
+
         matrixElementWiseMul(pre_grad, ot[t], pre_grad);
         matrixSub(&c_grad, pre_grad, &c_grad, -1);// ct gradient
         matrixElementWiseMul(&c_grad, at[t], &i_grad);// it gradient

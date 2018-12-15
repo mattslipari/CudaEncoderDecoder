@@ -112,8 +112,8 @@ public:
 
     void setAllRandom(float lb, float ub) {
         mallocHost();
-        for (int j = 0; j < rows; j++) {
-            for (int i = 0; i < cols; i++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 float rand_val = lb + ((float) (rand()) / ((float) (RAND_MAX / (ub - lb))));
                 hostData[i * cols + j] = rand_val;
             }
