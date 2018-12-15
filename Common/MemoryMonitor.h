@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #ifndef __MEMORY_MONITOR_H__
 #define __MEMORY_MONITOR_H__
 #include <stdio.h>

@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #ifndef CUDAENCODERDOCODER_FULLYCONNECT_H
 #define CUDAENCODERDOCODER_FULLYCONNECT_H
 

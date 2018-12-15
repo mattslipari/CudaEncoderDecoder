@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #include "MemoryMonitor.h"
 #include <cuda_runtime.h>
 #include <stdio.h>

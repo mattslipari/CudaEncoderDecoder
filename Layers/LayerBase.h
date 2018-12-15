@@ -1,3 +1,8 @@
+/*
+Modified from
+https://github.com/zhxfl/CUDA-CNN
+*/
+
 #ifndef __LAYERS_BASE_CU_H__
 #define __LAYERS_BASE_CU_H__
 
