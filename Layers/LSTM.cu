@@ -45,7 +45,7 @@ void LSTM::forward() {
         matrixElementWiseMul(this->o_layer->outputs, cell_t, this->pre_hidden);
     }
 
-    this->pre_hidden->printHost();
+    // this->pre_hidden->printHost();
 }
 
 void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) {
@@ -75,22 +75,27 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) 
         matrixSub(&o_weights_grad, o_layer->w_grad, &o_weights_grad, -1); //  weights addition
         tanh_grad << < blockDim_r, gridDim_r >> >
                                    (pre_grad->getDev(), tanh_ct[t]->getDev(), tanh_ct[t]->rows, tanh_ct[t]->cols);
+        
         matrixElementWiseMul(pre_grad, ot[t], pre_grad);
         matrixSub(&c_grad, pre_grad, &c_grad, -1);// ct gradient
         matrixElementWiseMul(&c_grad, at[t], &i_grad);// it gradient
         matrixElementWiseMul(&c_grad, it[t], &a_grad);//at gradient
+        
         if (t - 1 < 0)
             matrixElementWiseMul(&c_grad, pre_cell, &f_grad);
         else
             matrixElementWiseMul(&c_grad, ct[t - 1], &f_grad);//ft gradient
+        
         i_layer->backpropagation(&i_grad, input_hidden);
         matrixSub(&i_weights_grad, i_layer->w_grad, &i_weights_grad, -1); //  weights addition
         f_layer->backpropagation(&f_grad, input_hidden);
         matrixSub(&f_weights_grad, f_layer->w_grad, &f_weights_grad, -1); //  weights addition
         a_layer->backpropagation(&a_grad, input_hidden);
         matrixSub(&a_weights_grad, a_layer->w_grad, &a_weights_grad, -1); //  weights addition
+        
         pre_grad->cpuClear();
         pre_grad->gpuClear();
+
         matrixSplit(i_layer->inputs_grad, &x_grad, &ht_grad);
         matrixSub(pre_grad, &ht_grad, pre_grad, -1);
         matrixSplit(a_layer->inputs_grad, &x_grad, &ht_grad);
@@ -100,7 +105,7 @@ void LSTM::backpropagation(cuMatrix<float> *pre_grad, cuMatrix<float> **inputs) 
         matrixSplit(o_layer->inputs_grad, &x_grad, &ht_grad);
         matrixSub(pre_grad, &ht_grad, pre_grad, -1);
     }
-    pre_grad->printHost();
+    // pre_grad->printHost();
 }
 
 cuMatrix<float> *LSTM::getGrad() {

@@ -69,7 +69,6 @@ void matrixSplit(cuMatrix<float> *x, cuMatrix<float> *y, cuMatrix<float> *z) {
                cudaMemcpyDeviceToDevice);
 }
 
-
 /*matrix transpose*/
 /*x = T(x)*/
 void matrixTranspose(cuMatrix<float> *x) {

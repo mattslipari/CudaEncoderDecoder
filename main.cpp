@@ -1,25 +1,44 @@
 #include "Layers/FullyConnect.h"
 #include "Layers/LSTM.h"
 #include "Common/cuMatrix.h"
+#include "Common/CycleTimer.h"
 
 int main() {
-    float data[8];
-    for (int i = 0; i < 4; i++) {
-        data[i] = i + 1;
-        data[i + 4] = i + 1;
-    }
-    float grad[12];
-    for (int i = 0; i < 12; i++) {
-        grad[i] = i;
+
+    int total_inputs = 100;    
+    int units = 140;
+    int lambda = 1.0;
+    int input_cols = 1000;
+    int input_batch = 200; //real batch is: input_batch + units
+
+    cuMatrix<float> pre_hidden(units, input_cols); //same # of cols as inputs
+    cuMatrix<float> pre_cell(units, input_cols); //same # of cols as inputs
+
+    cuMatrix<float> *input_list[total_inputs];
+    for (int i = 0; i < total_inputs; i++) {
+        cuMatrix<float> inputs(input_batch, input_cols);
+        input_list[i] = &inputs;
     }
 
-    cuMatrix<float> inputs(data, 2, 4);
-    cuMatrix<float> pre_hidden(grad, 3, 4);
-    cuMatrix<float> pre_cell(grad, 3, 4);
+    //Start our computation
+    double overallStartTime = CycleTimer::currentSeconds();
 
-    cuMatrix<float> *input_list[1];
-    input_list[0] = &inputs;
-    LSTM ls(input_list, &pre_hidden, &pre_cell, 1, 3, 1.0);
+    LSTM ls(input_list, &pre_hidden, &pre_cell, total_inputs, units, lambda);
+
+    double initEndTime = CycleTimer::currentSeconds();    
+    double forwardStartTime = CycleTimer::currentSeconds();
+
     ls.forward();
+
+    double forwardEndTime = CycleTimer::currentSeconds();
+    double backStartTime = CycleTimer::currentSeconds();
+
     ls.backpropagation(&pre_cell,input_list);
+
+    double overallEndTime = CycleTimer::currentSeconds(); 
+
+    printf("Initialization Time Elapsed: %.3f ms\n", initEndTime - overallStartTime);
+    printf("Forward Time Elapsed: %.3f ms\n", forwardEndTime - forwardStartTime);
+    printf("Backpropagation Time Elapsed: %.3f ms\n", overallEndTime - backStartTime);
+    printf("Overall Time Elapsed: %.3f ms\n", overallEndTime - overallStartTime);
 }
