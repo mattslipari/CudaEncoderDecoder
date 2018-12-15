@@ -28,14 +28,11 @@ void LSTM::forward(cuMatrix<float> **encoder_hidden) {
     dim3 blockDim(16, 16, 1);
     dim3 gridDim((cell_t->cols + blockDim.x - 1) / blockDim.x,
                  (cell_t->rows + blockDim.y - 1) / blockDim.y);
-    //printf("attention: %d\n",useAttention);
 
     for (int t = 0; t < std::min(this->input_total, MAXTIMESTEP); t++) {
         input_t = this->inputs[t];
         if (useAttention) {
-            //printf("here\n");
             matrixConcat(input_t, this->pre_hidden, concat_tmp);
-            //printf("done\n");
             cuMatrix<float> *ct = attention(encoder_hidden);
             matrixConcat(concat_tmp, ct, input_hidden);
         } else
@@ -67,8 +64,6 @@ void LSTM::forward(cuMatrix<float> **encoder_hidden) {
         tanh_ct[t]->copyFromGpu(cell_t->getDev());
         matrixElementWiseMul(this->o_layer->outputs, cell_t, this->pre_hidden);
     }
-
-    // this->pre_hidden->printHost();
 }
 
 cuMatrix<float> *LSTM::attention(cuMatrix<float> **encoder_hidden) {

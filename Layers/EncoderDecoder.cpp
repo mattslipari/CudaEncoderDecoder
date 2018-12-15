@@ -2,7 +2,6 @@
 
 void EncoderDecoder::forward() {
     encoder->forward(NULL);
-    //printf("forward done\n");
     decoder->forward(encoder->ht);
 }
 
