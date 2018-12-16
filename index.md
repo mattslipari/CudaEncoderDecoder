@@ -1,3 +1,6 @@
+# Final Report
+[FINAL REPORT](https://mattslipari.github.io/CudaEncoderDecoder/15_418_Final_Report.pdf)
+
 # Project Proposal
 [PROPOSAL](https://mattslipari.github.io/CudaEncoderDecoder/proposal)
 
@@ -15,6 +18,6 @@
 **November 28th** | Finish initial code | Completed |
 **December 1st**  | Start writing code for an RNN  | Completed |
 **December 5th** | Finish writing RNN code | Completed |
-**December 8th** | Write the Encoder-Decoder RNN and test | In-progress |
-**December 12th** | Attempt our additional goals |  |
-**December 15th**  | Complete final version of code |  |
+**December 8th** | Write the Encoder-Decoder RNN and test | Completed |
+**December 12th** | Attempt our additional goals | NA |
+**December 15th**  | Complete final version of code | Completed |
